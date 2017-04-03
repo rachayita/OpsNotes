@@ -30,4 +30,12 @@ c2NvdHRsaW51eC5jb20gcm9ja3MK
 $ echo -n c2NvdHRsaW51eC5jb20gcm9ja3MK | base64 -d
 scottlinux.com rocks
 
+########## vim macro recording ##########
+qd 	start recording to register d, or any
+... 	your complex series of commands
+q 	stop recording
+@d 	execute your macro at reg d
+@@ 	execute your macro again 
+#@d to execute number of times
+
 ########## ~~~ ##########
