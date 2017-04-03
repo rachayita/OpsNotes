@@ -38,4 +38,20 @@ q 	stop recording
 @@ 	execute your macro again 
 #@d to execute number of times
 
+########## SHOW GIT BRANCH ON PROMPT ##########
+### should be added to .bashrc
+
+function parse_git_branch () {
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+  #git rev-parse --symbolic-full-name --abbrev-ref HEAD
+}
+
+RED="\[\033[0;31m\]"
+YELLOW="\[\033[0;33m\]"
+GREEN="\[\033[0;32m\]"
+NO_COLOR="\[\033[0m\]"
+
+PS1="$GREEN\u@\h$NO_COLOR:\w$YELLOW\$(parse_git_branch)$NO_COLOR\$ "
+
+
 ########## ~~~ ##########
