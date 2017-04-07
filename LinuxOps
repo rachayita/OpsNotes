@@ -53,5 +53,7 @@ NO_COLOR="\[\033[0m\]"
 
 PS1="$GREEN\u@\h$NO_COLOR:\w$YELLOW\$(parse_git_branch)$NO_COLOR\$ "
 
+########## mysql cmd pretty print ##########
+ pager less -SFX
 
 ########## ~~~ ##########
