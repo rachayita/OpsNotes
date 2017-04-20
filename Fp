@@ -1,0 +1,11 @@
+1) Referentially Transparent—in any program, the expression can be replaced by its result without changing the meaning of the program. And we say that a function is pure if its body is RT, assuming RT inputs.
+
+2) A pure function is modular and composable because it separates the logic of the computation itself from "what to do with the result & how to obtain the input"; it is a black box.
+
+3) Since the main method itself is called once by the operating environment and never from anywhere in our program, referential transparency is not violated.
+
+4) By-name param: The unevaluated form of an expression is often called a thunk . Thunks are represented at runtime in Scala as a value of type scala.Function0 , which you can see if you're curious by inspecting the signature of non-strict functions in the .class file the Scala compiler generates.
+
+5) A function having the same argument and return type is called an endofunction.
+
+6) A monoid is a type together with an associative binary operation ( op ) which has an identity element ( zero )
