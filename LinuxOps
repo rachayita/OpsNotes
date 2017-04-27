@@ -62,5 +62,7 @@ HostName HOST or IP
 User USER_NAME
 IdentityFile "PATH TO id_rsa FILE"
 
+########## list open network ports and the processes ##########
+netstat -lntpu
 
 ########## ~~~ ##########
