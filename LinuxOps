@@ -17,7 +17,7 @@ chmod 700 ~/.ssh
 ssh-keygen -t rsa
 
 ########## cmd line json parser ##########
-1. | python -m json.too
+1. | python -m json.tool
 2. | jq .
 
 ########## trash path ##########
