@@ -1,0 +1,12 @@
+1) JVM params for visualVM on remote server for JMX
+    ---
+    -Dcom.sun.management.jmxremote \
+    -Dcom.sun.management.jmxremote.port=??? \
+    -Dcom.sun.management.jmxremote.rmi.port=<same as above port> \
+    -Dcom.sun.management.jmxremote.ssl=false \
+    -Dcom.sun.management.jmxremote.authenticate=false \
+    -Djava.rmi.server.hostname=<external_IP_of_server>
+    ---
+
+    :~$ hostname -i
+          should return <external_IP_of_server>, otherwise bind <external_IP_of_server> to hostname in /etc/hosts
