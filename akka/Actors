@@ -14,7 +14,7 @@ Actors
     //Right after starting the actor, its preStart method is invoked
     def preStart(): Unit = ()
      
-    //After stopping an actor, its postStop hook is called
+    //After stopping an actor, its postStop hook is called + cleaning process
     def postStop(): Unit = ()
      
     def preRestart(reason: Throwable, message: Option[Any]): Unit = {
@@ -45,3 +45,9 @@ Actors
    So always prefer tell for performance, and only ask if you must.
 
 -> When using future callbacks, such as onComplete, onSuccess, and onFailure, inside actors you need to carefully avoid closing over the containing actor’s reference, i.e. do not call methods or access mutable state on the enclosing actor from within     the  callback. This would break the actor encapsulation and may introduce synchronization bugs and race conditions because the callback will be scheduled concurrently to the enclosing actor. Unfortunately there is not yet a way to detect these illegal accesses at compile time.
+
+-> Termination of an actor proceeds in two steps: first the actor suspends its mailbox processing and sends a stop command to all its children, then it keeps processing the internal termination notifications from its children until the last one is gone, finally terminating itself (invoking postStop, dumping mailbox, publishing Terminated on the DeathWatch, telling its supervisor).
+
+-> Since stopping an actor is asynchronous, you cannot immediately reuse the name of the child you just stopped; this will result in an InvalidActorNameException. Instead, watch the terminating actor and create its replacement in response to the Terminated message which will eventually arrive.
+
+-> Send an actor the akka.actor.PoisonPill message, which will stop the actor when the message is processed.
