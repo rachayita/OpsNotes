@@ -1,6 +1,6 @@
 1) Referentially Transparent—in any program, the expression can be replaced by its result without changing the meaning of the program. And we say that a function is pure if its body is RT, assuming RT inputs.
 
-2) A pure function is modular and composable because it separates the logic of the computation itself from "what to do with the result & how to obtain the input"; it is a black box.
+2) A pure function is modular and composable because it separates the logic of the computation itself from "what to do with the result & how to obtain the input"; it is a black box. A pure function has no observable effect on the execution of the program other than to compute a result given its inputs; we say that it has no side effects.
 
 3) Since the main method itself is called once by the operating environment and never from anywhere in our program, referential transparency is not violated.
 
@@ -9,3 +9,14 @@
 5) A function having the same argument and return type is called an endofunction.
 
 6) A monoid is a type together with an associative binary operation ( op ) which has an identity element ( zero )
+
+8) A function is typically partial because it makes some assumptions about its inputs that are not implied by the input types.
+
+9) If the evaluation of an expression runs forever or throws an error instead of returning a definite value, we say that the expression does not terminate , or that it evaluates to bottom . A function f is strict if the expression f(x) evaluates to bottom for all x that evaluate to bottom.
+
+10) The uniformity of representation makes composition easier.
+
+11) Aren't imperative and functional programming opposites?
+Absolutely not. Remember, functional programming is simply programming without side-effects. Imperative programming is about programming with statements that modify some program state, and as we've seen it's entirely reasonable to maintain state without side-effects.  Functional programming has excellent support for writing imperative programs, with the added benefit that such programs can be reasoned about equationally because they are referentially transparent.
+
+12) The uniformity of representation makes composition easier.
