@@ -9,7 +9,15 @@
 5) A function having the same argument and return type is called an endofunction.
 
 6) A monoid is a type together with an associative binary operation ( op ) which has an identity element ( zero )
-
+    The laws of associativity and identity are collectively called the monoid laws . A monoid consists of:
+		*	Some type A
+		*	A binary associative operation that takes two values of type A and combines them into one.
+		*	A value of type A that is an identity for that operation.
+				
+				trait Monoid[A] {
+				  def op(a1: A, a2: A): A
+				  def zero: A
+				}
 8) A function is typically partial because it makes some assumptions about its inputs that are not implied by the input types.
 
 9) If the evaluation of an expression runs forever or throws an error instead of returning a definite value, we say that the expression does not terminate , or that it evaluates to bottom . A function f is strict if the expression f(x) evaluates to bottom for all x that evaluate to bottom.
@@ -19,4 +27,10 @@
 11) Aren't imperative and functional programming opposites?
 Absolutely not. Remember, functional programming is simply programming without side-effects. Imperative programming is about programming with statements that modify some program state, and as we've seen it's entirely reasonable to maintain state without side-effects.  Functional programming has excellent support for writing imperative programs, with the added benefit that such programs can be reasoned about equationally because they are referentially transparent.
 
-12) The uniformity of representation makes composition easier.
+12) A function having the same argument and return type is called an endofunction. 
+
+13) In purely functional programming you don't tell the computer what to do as such but rather you tell it what stuff is.
+
+14) if a function is called twice with the same parameters, it's guaranteed to return the same result. That's called referential transparency 
+
+15) Calling functions with too few parameters creates a partial function. if we call a function with too few parameters (i.e. partially apply it), we get back a function that takes the number of parameters that we left out
