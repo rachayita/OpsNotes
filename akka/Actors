@@ -1,5 +1,15 @@
 Actors
 
+-> Actor programming is reactive programming. Another way to say this is that it’s event-driven programming.
+
+-> Reactive means: readily responsive to a stimulus.
+
+-> Strongly Typed Messages, Loosely Typed Endpoints(Actors).
+
+-> It’s the reception of that message that carries true meaning in Actor programming. When the Actor pulls that message out of its mailbox and begins processing it, then it has truly received that message.
+
+-> An Actor Is Behaviour.
+
 -> context exposes contextual information for the actor and the current message, such as:
 
     ~factory methods to create child actors (actorOf)
@@ -51,3 +61,11 @@ Actors
 -> Since stopping an actor is asynchronous, you cannot immediately reuse the name of the child you just stopped; this will result in an InvalidActorNameException. Instead, watch the terminating actor and create its replacement in response to the Terminated message which will eventually arrive.
 
 -> Send an actor the akka.actor.PoisonPill message, which will stop the actor when the message is processed.
+
+-> A FSM can be described as:
+    State(S) x Event(E) -> Actions (A), State(S’)
+    If we are in state S and the event E occurs, we should perform the actions A and make a transition to the state S’.
+
+-> The FSM trait inherits directly from Actor, when you extend FSM you must be aware that an actor is actually created.
+ 
+

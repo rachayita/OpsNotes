@@ -1,0 +1,11 @@
+- When you see an = symbol in Haskell code, it represents “meaning”: the name on the left is defined to be the expression on the right.
+
+- a variable provides a way to give a name to an expression.
+
+- The record that we use to track an unevaluated expression is referred to as a thunk(a deferred expression).
+
+- No subtyping or coercion polymorphism only parameterised or polymorphic type is supportd.
+
+-  -> is right-associative.
+
+-  The environment in which ghci operates is called the IO monad.
