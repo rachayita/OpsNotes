@@ -1,0 +1,19 @@
+- Just like vectors, hash maps store their data on the heap. 
+
+- The ? Operator Can Only Be Used in Functions That Return Result.
+
+- we can implement a trait on a type only if either the trait or the type is local to our crate. This restriction is part of a property of programs called coherence, and more specifically the orphan rule, so named because the parent type is not present.
+
+- Associated methods do not have self as a parameter. They are used for creating new instance of struct.
+
+- Note that it isn’t possible to call the default implementation from an overriding implementation of that same method. 
+
+- Lifetime annotations: some scope can be substituted for 'a that will satisfy this signature.
+
+- Every reference has a lifetime and that you need to specify lifetime parameters for functions or structs that use references.
+
+- Most of the time, the lifetime problem results from attempting to create a dangling reference or a mismatch of the available lifetimes.
+
+- Iterators produce a series of values, and we can call the collect method on an iterator to turn it into a collection.
+
+- Lifetime annotation: The data returned by the function will live as long as the data passed into the function in the argument.

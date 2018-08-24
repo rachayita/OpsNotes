@@ -75,3 +75,5 @@ Absolutely not. Remember, functional programming is simply programming without s
 30) One common use for Readers is dependency injec on. If we have a number of opera ons that all depend on some external configura on, we can chain them together using a Reader to produce one large opera on that accepts the configura on as a parameter and runs our program in the order specified.
 
 31) Side effects are essentially invisible inputs to, or outputs from, functions.
+
+32) Types are not classes but they are more like sets. A type is just a name for a set of things that can be used as inputs or outputs.
