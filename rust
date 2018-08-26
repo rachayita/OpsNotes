@@ -17,3 +17,27 @@
 - Iterators produce a series of values, and we can call the collect method on an iterator to turn it into a collection.
 
 - Lifetime annotation: The data returned by the function will live as long as the data passed into the function in the argument.
+
+- First,	the	moves	always apply	tothe	value	proper, not	the	heapstorage	they own. Second,	the	Rust	compiler’s code	generation	is	good	at	“seeing	through”	all	these	moves;	in	practice, the	machine	code	often	stores	the	value	directly	where	it	belongs.
+
+- If	all	the	fields of	your	struct	are	themselves	Copy,	then	you	can	make	the	type	Copy	as well	by	placing	the	attribute	#[derive(Copy,	Clone)]	above	the	definition. 
+
+-	Copy	types	are	very	limited	in	which types	they	can	contain,	whereas	non-Copy	types	can	use	heap	allocation and	own	other	sorts	of	resources.	So	making	a	type	Copy	represents	a serious	commitment	on	the	part	of	the	implementer:	if	it’s	necessary	to change	it	to	non-Copy	later, much	of the	code	that	uses	it	will	probably need	to	be	adapted.
+
+- The	Rc	and	Arc	types	are	very	similar;	the	only	difference	between	them is	that	an	Arc	is	safe	to	share	between	threads	directly—the	name	Arc	is short	for	atomic	reference	count—whereas	a	plain	Rc	uses	faster	non- thread-safe	code	to	update	its	reference	count.
+
+- You	can	think	of	the	distinction	between	shared	and	mutable	references as	a	way	to	enforce	a	multiple	readers	or	single	writer	rule	at	compile time.
+
+- As	long	as	there	are	shared	references to	a	value,	not	even	its	owner	can	modify	it;	the	value	is	locked	down.
+
+- 	If	you	actually	want	to	know	whether	two	references point	to	the	same	memory,	you	can	use	std::ptr::eq,	which	compares them	as	addresses:
+                       assert!(rx	==	ry);					   	//	their	referents	are	equal
+                       assert!(!std::ptr::eq(rx,	ry));	//	but	occupy	different	addresses
+
+- References	are	never	null.
+
+- Rust	tries	to	assign	each	reference	type	in	your	program	a	lifetime.
+
+- At	runtime,	a	reference	is	nothing	but	an	address;	its	lifetime is	part	of	its	type	and	has	no	runtime	representation.
+
+- 
