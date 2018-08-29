@@ -18,7 +18,7 @@
 
 - Lifetime annotation: The data returned by the function will live as long as the data passed into the function in the argument.
 
-- First,	the	moves	always apply	tothe	value	proper, not	the	heapstorage	they own. Second,	the	Rust	compiler’s code	generation	is	good	at	“seeing	through”	all	these	moves;	in	practice, the	machine	code	often	stores	the	value	directly	where	it	belongs.
+- First,	the	moves	always apply	to the	value	proper, not	the	heapstorage	they own. Second,	the	Rust	compiler’s code	generation	is	good	at	“seeing	through”	all	these	moves;	in	practice, the	machine	code	often	stores	the	value	directly	where	it	belongs.
 
 - If	all	the	fields of	your	struct	are	themselves	Copy,	then	you	can	make	the	type	Copy	as well	by	placing	the	attribute	#[derive(Copy,	Clone)]	above	the	definition. 
 
@@ -40,4 +40,55 @@
 
 - At	runtime,	a	reference	is	nothing	but	an	address;	its	lifetime is	part	of	its	type	and	has	no	runtime	representation.
 
-- 
+- When	a	function	takes	a	single	reference	as	an	argument,	and	returns	a single	reference,	Rust	assumes	that	the	two	must	have	the	same	lifetime.
+
+- Function argument	and	return	value must	have	the	same	lifetime.
+
+- if	your	function	doesn’t	return	any	references, then	you	never	need	to write	out	lifetimes	for	your	parameters.	Rust	just	assigns	a	distinct	lifetime to	each	spot	that	needs	one.
+
+- No lifetime annotation required when self is a parameter.
+
+- Throughout	its	lifetime,	a	shared	reference	makes	its	referent	read-only: you	may	not	assign	to	the	referent	or	move	its	value	elsewhere.
+
+- Shared	access	is	read-only	access.	Values	borrowed	by	shared references	are	read-only.	Across	the	lifetime	of	a	shared reference,	neither	its	referent,	nor	anything	reachable	from	that referent,	can	be	changed	by	anything.	There	exist	no	live	mutablereferences	to	anything	in	that	structure;	its	owner	is	held	read- only;	and	so	on.	It’s	really	frozen.
+
+- Mutable	access	is	exclusive	access.	A	value	borrowed	by	a mutable	reference	is	reachable	exclusively	via	that	reference.  Across	the	lifetime	of	a	mutable	reference,	there	is	no	other usable	path	to	its	referent,	or	to	any	value	reachable	from	there.  The	only	references	whose	lifetimes	may	overlap	with	a	mutable reference	are	those	you	borrow	from	the	mutable	reference	itself.
+
+let	mut	x	=	10;
+let	r1	=	&x;
+let	r2	=	&x;					//	ok:	multiple	shared	borrows	permitted
+x	+=	10;							//	error:	cannot	assign	to	`x`	because	it	is	borrowed
+let	m	=	&mut	x;		  //	error:	cannot	borrow	`x`	as	mutable	because	it	is
+																	//	also	borrowed	as	immutable
+let	mut	y	=	20;
+let	m1	=	&mut	y;
+let	m2	=	&mut	y;		//	error:	cannot	borrow	as	mutable	more	than	once
+let	z	=	y;						//	error:	cannot	use	`y`	because	it	was	mutably	borrowed
+
+It	is	OK	to	reborrow	a	shared	reference	from	a	shared	reference:
+let	mut	w	=	(107,	109);
+let	r	=	&w;
+let	r0	=	&r.0;				//	ok:	reborrowing	shared	as	shared
+let	m1	=	&mut	r.1;	//	error:	can't	reborrow	shared	as	mutable
+
+You	can	reborrow	from	a	mutable	reference:
+let	mut	v	=	(136,	139);
+let	m	=	&mut	v;
+let	m0	=	&mut	m.0;	//	ok:	reborrowing	mutable	from	mutable
+*m0	=	137;
+let	r1	=	&m.1;				//	ok:	reborrowing	shared	from	mutable, and	doesn't	overlap	with	m0
+v.1;									//	error:	access	through	other	paths	still	forbidden
+
+int	x	=	42;						//	int	variable,	not	const
+const	int	*p	=	&x;		//	pointer	to	const	int
+assert(*p	==	42);
+x++;									//	change	variable	directly
+assert(*p	==	43);		//	“constant”	referent's	value	has	changed
+
+
+let	mut	x	=	42;				//	nonconst	i32	variable
+let	p	=	&x;						//	shared	reference	to	i32
+assert_eq!(*p,	42);
+x	+=	1;							//	error:	cannot	assign	to	x	because	it	is	borrowed
+assert_eq!(*p,	42);		//	if	you	take	out	the	assignment,	this	is	true
+

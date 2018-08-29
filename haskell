@@ -21,3 +21,5 @@
 - :sprint    A ghci command to print the value without evaluating it to show the laziness of expression evaluation.
 
 - seq  -sequences its arguments. It evaluates the first argument before evaluating the second.
+
+- ghci is actually IO Monad.
