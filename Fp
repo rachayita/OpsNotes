@@ -77,3 +77,5 @@ Absolutely not. Remember, functional programming is simply programming without s
 31) Side effects are essentially invisible inputs to, or outputs from, functions.
 
 32) Types are not classes but they are more like sets. A type is just a name for a set of things that can be used as inputs or outputs.
+
+33) A type class interface is any functionality we expose to users. Interfaces are generic methods that accept instances of the type class as implicit parameters.

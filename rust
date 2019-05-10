@@ -1,3 +1,20 @@
+
+- Rust is designed to use ahead-of-time compilation: the translation of your entire program to machine code is completed before it ever begins execution.
+
+- If your program compiles, itis free of data races. All Rust functions are thread-safe.
+
+- Rust generally uses the u8 type for byte values. For example, reading data from a file or socket yields a stream of u8 values.
+
+- since the ASCII code for A is 65, the literals b'A' and 65u8 are exactly equivalent. Only  ASCII characters may appear in byte literals.
+
+- Rust requires array indices to be usize values.
+
+- assert! terminates the program with a helpful message including the source location of the failing check; this kind of abrupt termination is called a panic.
+
+- Invoke the cargo run command from any directory in the package to build and run our program
+
+- Cargo places the executable in the target subdirectory at the top of the package
+
 - Just like vectors, hash maps store their data on the heap. 
 
 - The ? Operator Can Only Be Used in Functions That Return Result.
@@ -92,3 +109,39 @@ assert_eq!(*p,	42);
 x	+=	1;							//	error:	cannot	assign	to	x	because	it	is	borrowed
 assert_eq!(*p,	42);		//	if	you	take	out	the	assignment,	this	is	true
 
+- When	you	see	expected	type	`()` in error msg,	look	for	a	missing	semicolon first.
+
+- All	blocks	of	an	if and match	expression	must	produce	values	of	the	same	type.
+
+- The	standard	collections	are	all	iterable,	as	are	arrays	and	slices.
+
+- fn	exit(code:	i32)	->	!
+  The	!	means	that	exit()	never	returns.	It’s	a	"divergent function".
+
+- The	symbol	::<...>	is	affectionately	known	in	the	Rust	community	as	the turbofish.
+
+- A	panic	is not	a	crash.	It’s	not	undefined	behavior.	It’s	more	like	a RuntimeException	in	Java.
+
+- Rust	doesn’t	have	exceptions.
+
+- ?	can	only	be	used	in	functions	that	have	a	Result	return type.
+
+- Rust	doesn’t	use	the	term object	much,	preferring	to	call	everything	a	value.
+
+- Only	calls	through	&mut	Write incur	the	overhead	of	a	virtual	method	call.  (Traits)
+ 
+- Possible	reason	to	use	trait	objects	is	to	reduce	the	total	amount of	compiled	code.	Rust	may	have	to	compile	a	generic	function	many times,	once	for	each	type	it’s	used	with.
+
+- generics	have two	important	advantages	over	trait	objects: 
+  1. Speed: 	Rust	can	evaluate it	at	compile	time,	so	that	there’s	no	runtime	cost	at	all.
+	2. not	every	trait	can	support	trait objects.
+	
+	- when	you	implement	a	trait,	either	the	trait	or	the	type must	be	new	in	the	current	crate.	This	is	called	the	coherence	rule.	It helps	Rust	ensure	that	trait	implementations	are	unique.	Your	code	can’t impl	Write	for	u8,	because	both	Write	and	u8	are	defined	in	the	standard library.	If	Rust	let	crates	do	that,	there	could	be	multiple	implementations of	Write	for	u8,	in	different	crates,	and	Rust	would	have	no	reasonable way	to	decide	which	implementation	to	use	for	a	given	method	call.
+
+- Rust	supports polymorphism	with	two	related	features:	traits	and	generics.
+
+- A	trait	that	uses	the	Self	type	is	incompatible	with	trait	objects.
+
+- str and [T] types denote sets of values of varying sizes, they are unsized types.
+
+- Rust can’t store unsized values in variables or pass them as arguments.  You can only deal with them through pointers like &str or Box<Write>, which themselves are sized.
