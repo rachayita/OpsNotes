@@ -48,8 +48,8 @@
 - As	long	as	there	are	shared	references to	a	value,	not	even	its	owner	can	modify	it;	the	value	is	locked	down.
 
 - 	If	you	actually	want	to	know	whether	two	references point	to	the	same	memory,	you	can	use	std::ptr::eq,	which	compares them	as	addresses:
-                       assert!(rx	==	ry);					   	//	their	referents	are	equal
-                       assert!(!std::ptr::eq(rx,	ry));	//	but	occupy	different	addresses
+assert!(rx	==	ry);					   	//	their	referents	are	equal
+assert!(!std::ptr::eq(rx,	ry));	//	but	occupy	different	addresses
 
 - References	are	never	null.
 
@@ -76,7 +76,7 @@ let	r1	=	&x;
 let	r2	=	&x;					//	ok:	multiple	shared	borrows	permitted
 x	+=	10;							//	error:	cannot	assign	to	`x`	because	it	is	borrowed
 let	m	=	&mut	x;		  //	error:	cannot	borrow	`x`	as	mutable	because	it	is
-																	//	also	borrowed	as	immutable
+//	also	borrowed	as	immutable
 let	mut	y	=	20;
 let	m1	=	&mut	y;
 let	m2	=	&mut	y;		//	error:	cannot	borrow	as	mutable	more	than	once
@@ -116,7 +116,7 @@ assert_eq!(*p,	42);		//	if	you	take	out	the	assignment,	this	is	true
 - The	standard	collections	are	all	iterable,	as	are	arrays	and	slices.
 
 - fn	exit(code:	i32)	->	!
-  The	!	means	that	exit()	never	returns.	It’s	a	"divergent function".
+The	!	means	that	exit()	never	returns.	It’s	a	"divergent function".
 
 - The	symbol	::<...>	is	affectionately	known	in	the	Rust	community	as	the turbofish.
 
@@ -128,15 +128,15 @@ assert_eq!(*p,	42);		//	if	you	take	out	the	assignment,	this	is	true
 
 - Rust	doesn’t	use	the	term object	much,	preferring	to	call	everything	a	value.
 
-- Only	calls	through	&mut	Write incur	the	overhead	of	a	virtual	method	call.  (Traits)
- 
+- Only	calls	through	&mut	Write incur	the	overhead	of	a	virtual	method	call  (Traits).
+
 - Possible	reason	to	use	trait	objects	is	to	reduce	the	total	amount of	compiled	code.	Rust	may	have	to	compile	a	generic	function	many times,	once	for	each	type	it’s	used	with.
 
 - generics	have two	important	advantages	over	trait	objects: 
-  1. Speed: 	Rust	can	evaluate it	at	compile	time,	so	that	there’s	no	runtime	cost	at	all.
-	2. not	every	trait	can	support	trait objects.
-	
-	- when	you	implement	a	trait,	either	the	trait	or	the	type must	be	new	in	the	current	crate.	This	is	called	the	coherence	rule.	It helps	Rust	ensure	that	trait	implementations	are	unique.	Your	code	can’t impl	Write	for	u8,	because	both	Write	and	u8	are	defined	in	the	standard library.	If	Rust	let	crates	do	that,	there	could	be	multiple	implementations of	Write	for	u8,	in	different	crates,	and	Rust	would	have	no	reasonable way	to	decide	which	implementation	to	use	for	a	given	method	call.
+1. Speed: 	Rust	can	evaluate it	at	compile	time,	so	that	there’s	no	runtime	cost	at	all.
+2. not	every	trait	can	support	trait objects.
+
+- when	you	implement	a	trait,	either	the	trait	or	the	type must	be	new	in	the	current	crate.	This	is	called	the	coherence	rule.	It helps	Rust	ensure	that	trait	implementations	are	unique.	Your	code	can’t impl	Write	for	u8,	because	both	Write	and	u8	are	defined	in	the	standard library.	If	Rust	let	crates	do	that,	there	could	be	multiple	implementations of	Write	for	u8,	in	different	crates,	and	Rust	would	have	no	reasonable way	to	decide	which	implementation	to	use	for	a	given	method	call.
 
 - Rust	supports polymorphism	with	two	related	features:	traits	and	generics.
 
@@ -145,3 +145,5 @@ assert_eq!(*p,	42);		//	if	you	take	out	the	assignment,	this	is	true
 - str and [T] types denote sets of values of varying sizes, they are unsized types.
 
 - Rust can’t store unsized values in variables or pass them as arguments.  You can only deal with them through pointers like &str or Box<Write>, which themselves are sized.
+
+- A mutable slice &mut [T] lets you read and modify elements, but can’t be shared; a shared slice &[T] lets you share access among several readers, but doesn’t let you modify elements.
