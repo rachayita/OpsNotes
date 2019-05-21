@@ -35,115 +35,123 @@
 
 - Lifetime annotation: The data returned by the function will live as long as the data passed into the function in the argument.
 
-- First,	the	moves	always apply	to the	value	proper, not	the	heapstorage	they own. Second,	the	Rust	compiler’s code	generation	is	good	at	“seeing	through”	all	these	moves;	in	practice, the	machine	code	often	stores	the	value	directly	where	it	belongs.
+- First, the moves always apply to the value proper, not the heapstorage they own. Second, the Rust compiler’s code generation is good at “seeing through” all these moves; in practice, the machine code often stores the value directly where it belongs.
 
-- If	all	the	fields of	your	struct	are	themselves	Copy,	then	you	can	make	the	type	Copy	as well	by	placing	the	attribute	#[derive(Copy,	Clone)]	above	the	definition. 
+- If all the fields of your struct are themselves Copy, then you can make the type Copy as well by placing the attribute #[derive(Copy, Clone)] above the definition. 
 
--	Copy	types	are	very	limited	in	which types	they	can	contain,	whereas	non-Copy	types	can	use	heap	allocation and	own	other	sorts	of	resources.	So	making	a	type	Copy	represents	a serious	commitment	on	the	part	of	the	implementer:	if	it’s	necessary	to change	it	to	non-Copy	later, much	of the	code	that	uses	it	will	probably need	to	be	adapted.
+- Copy types are very limited in which types they can contain, whereas non-Copy types can use heap allocation and own other sorts of resources. So making a type Copy represents a serious commitment on the part of the implementer: if it’s necessary to change it to non-Copy later, much of the code that uses it will probably need to be adapted.
 
-- The	Rc	and	Arc	types	are	very	similar;	the	only	difference	between	them is	that	an	Arc	is	safe	to	share	between	threads	directly—the	name	Arc	is short	for	atomic	reference	count—whereas	a	plain	Rc	uses	faster	non- thread-safe	code	to	update	its	reference	count.
+- The Rc and Arc types are very similar; the only difference between them is that an Arc is safe to share between threads directly—the name Arc is short for atomic reference count—whereas a plain Rc uses faster non- thread-safe code to update its reference count.
 
-- You	can	think	of	the	distinction	between	shared	and	mutable	references as	a	way	to	enforce	a	multiple	readers	or	single	writer	rule	at	compile time.
+- You can think of the distinction between shared and mutable references as a way to enforce a multiple readers or single writer rule at compile time.
 
-- As	long	as	there	are	shared	references to	a	value,	not	even	its	owner	can	modify	it;	the	value	is	locked	down.
+- As long as there are shared references to a value, not even its owner can modify it; the value is locked down.
 
-- 	If	you	actually	want	to	know	whether	two	references point	to	the	same	memory,	you	can	use	std::ptr::eq,	which	compares them	as	addresses:
-assert!(rx	==	ry);					   	//	their	referents	are	equal
-assert!(!std::ptr::eq(rx,	ry));	//	but	occupy	different	addresses
+-  If you actually want to know whether two references point to the same memory, you can use std::ptr::eq, which compares them as addresses:
+assert!(rx == ry);         // their referents are equal
+assert!(!std::ptr::eq(rx, ry)); // but occupy different addresses
 
-- References	are	never	null.
+- References are never null.
 
-- Rust	tries	to	assign	each	reference	type	in	your	program	a	lifetime.
+- Rust tries to assign each reference type in your program a lifetime.
 
-- At	runtime,	a	reference	is	nothing	but	an	address;	its	lifetime is	part	of	its	type	and	has	no	runtime	representation.
+- At runtime, a reference is nothing but an address; its lifetime is part of its type and has no runtime representation.
 
-- When	a	function	takes	a	single	reference	as	an	argument,	and	returns	a single	reference,	Rust	assumes	that	the	two	must	have	the	same	lifetime.
+- When a function takes a single reference as an argument, and returns a single reference, Rust assumes that the two must have the same lifetime.
 
-- Function argument	and	return	value must	have	the	same	lifetime.
+- Function argument and return value must have the same lifetime.
 
-- if	your	function	doesn’t	return	any	references, then	you	never	need	to write	out	lifetimes	for	your	parameters.	Rust	just	assigns	a	distinct	lifetime to	each	spot	that	needs	one.
+- if your function doesn’t return any references, then you never need to write out lifetimes for your parameters. Rust just assigns a distinct lifetime to each spot that needs one.
 
 - No lifetime annotation required when self is a parameter.
 
-- Throughout	its	lifetime,	a	shared	reference	makes	its	referent	read-only: you	may	not	assign	to	the	referent	or	move	its	value	elsewhere.
+- Throughout its lifetime, a shared reference makes its referent read-only: you may not assign to the referent or move its value elsewhere.
 
-- Shared	access	is	read-only	access.	Values	borrowed	by	shared references	are	read-only.	Across	the	lifetime	of	a	shared reference,	neither	its	referent,	nor	anything	reachable	from	that referent,	can	be	changed	by	anything.	There	exist	no	live	mutablereferences	to	anything	in	that	structure;	its	owner	is	held	read- only;	and	so	on.	It’s	really	frozen.
+- Shared access is read-only access. Values borrowed by shared references are read-only. Across the lifetime of a shared reference, neither its referent, nor anything reachable from that referent, can be changed by anything. There exist no live mutablereferences to anything in that structure; its owner is held read- only; and so on. It’s really frozen.
 
-- Mutable	access	is	exclusive	access.	A	value	borrowed	by	a mutable	reference	is	reachable	exclusively	via	that	reference.  Across	the	lifetime	of	a	mutable	reference,	there	is	no	other usable	path	to	its	referent,	or	to	any	value	reachable	from	there.  The	only	references	whose	lifetimes	may	overlap	with	a	mutable reference	are	those	you	borrow	from	the	mutable	reference	itself.
+- Mutable access is exclusive access. A value borrowed by a mutable reference is reachable exclusively via that reference.  Across the lifetime of a mutable reference, there is no other usable path to its referent, or to any value reachable from there.  The only references whose lifetimes may overlap with a mutable reference are those you borrow from the mutable reference itself.
 
-let	mut	x	=	10;
-let	r1	=	&x;
-let	r2	=	&x;					//	ok:	multiple	shared	borrows	permitted
-x	+=	10;							//	error:	cannot	assign	to	`x`	because	it	is	borrowed
-let	m	=	&mut	x;		  //	error:	cannot	borrow	`x`	as	mutable	because	it	is
-//	also	borrowed	as	immutable
-let	mut	y	=	20;
-let	m1	=	&mut	y;
-let	m2	=	&mut	y;		//	error:	cannot	borrow	as	mutable	more	than	once
-let	z	=	y;						//	error:	cannot	use	`y`	because	it	was	mutably	borrowed
+let mut x = 10;
+let r1 = &x;
+let r2 = &x;     // ok: multiple shared borrows permitted
+x += 10;       // error: cannot assign to `x` because it is borrowed
+let m = &mut x;    // error: cannot borrow `x` as mutable because it is
+// also borrowed as immutable
+let mut y = 20;
+let m1 = &mut y;
+let m2 = &mut y;  // error: cannot borrow as mutable more than once
+let z = y;      // error: cannot use `y` because it was mutably borrowed
 
-It	is	OK	to	reborrow	a	shared	reference	from	a	shared	reference:
-let	mut	w	=	(107,	109);
-let	r	=	&w;
-let	r0	=	&r.0;				//	ok:	reborrowing	shared	as	shared
-let	m1	=	&mut	r.1;	//	error:	can't	reborrow	shared	as	mutable
+It is OK to reborrow a shared reference from a shared reference:
+let mut w = (107, 109);
+let r = &w;
+let r0 = &r.0;    // ok: reborrowing shared as shared
+let m1 = &mut r.1; // error: can't reborrow shared as mutable
 
-You	can	reborrow	from	a	mutable	reference:
-let	mut	v	=	(136,	139);
-let	m	=	&mut	v;
-let	m0	=	&mut	m.0;	//	ok:	reborrowing	mutable	from	mutable
-*m0	=	137;
-let	r1	=	&m.1;				//	ok:	reborrowing	shared	from	mutable, and	doesn't	overlap	with	m0
-v.1;									//	error:	access	through	other	paths	still	forbidden
+You can reborrow from a mutable reference:
+let mut v = (136, 139);
+let m = &mut v;
+let m0 = &mut m.0; // ok: reborrowing mutable from mutable
+*m0 = 137;
+let r1 = &m.1;    // ok: reborrowing shared from mutable, and doesn't overlap with m0
+v.1;         // error: access through other paths still forbidden
 
-int	x	=	42;						//	int	variable,	not	const
-const	int	*p	=	&x;		//	pointer	to	const	int
-assert(*p	==	42);
-x++;									//	change	variable	directly
-assert(*p	==	43);		//	“constant”	referent's	value	has	changed
+int x = 42;      // int variable, not const
+const int *p = &x;  // pointer to const int
+assert(*p == 42);
+x++;         // change variable directly
+assert(*p == 43);  // “constant” referent's value has changed
 
 
-let	mut	x	=	42;				//	nonconst	i32	variable
-let	p	=	&x;						//	shared	reference	to	i32
-assert_eq!(*p,	42);
-x	+=	1;							//	error:	cannot	assign	to	x	because	it	is	borrowed
-assert_eq!(*p,	42);		//	if	you	take	out	the	assignment,	this	is	true
+let mut x = 42;    // nonconst i32 variable
+let p = &x;      // shared reference to i32
+assert_eq!(*p, 42);
+x += 1;       // error: cannot assign to x because it is borrowed
+assert_eq!(*p, 42);  // if you take out the assignment, this is true
 
-- When	you	see	expected	type	`()` in error msg,	look	for	a	missing	semicolon first.
+- When you see expected type `()` in error msg, look for a missing semicolon first.
 
-- All	blocks	of	an	if and match	expression	must	produce	values	of	the	same	type.
+- All blocks of an if and match expression must produce values of the same type.
 
-- The	standard	collections	are	all	iterable,	as	are	arrays	and	slices.
+- The standard collections are all iterable, as are arrays and slices.
 
-- fn	exit(code:	i32)	->	!
-The	!	means	that	exit()	never	returns.	It’s	a	"divergent function".
+- fn exit(code: i32) -> !
+The ! means that exit() never returns. It’s a "divergent function".
 
-- The	symbol	::<...>	is	affectionately	known	in	the	Rust	community	as	the turbofish.
+- The symbol ::<...> is affectionately known in the Rust community as the turbofish.
 
-- A	panic	is not	a	crash.	It’s	not	undefined	behavior.	It’s	more	like	a RuntimeException	in	Java.
+- A panic is not a crash. It’s not undefined behavior. It’s more like a RuntimeException in Java.
 
-- Rust	doesn’t	have	exceptions.
+- Rust doesn’t have exceptions.
 
-- ?	can	only	be	used	in	functions	that	have	a	Result	return type.
+- ? can only be used in functions that have a Result return type.
 
-- Rust	doesn’t	use	the	term object	much,	preferring	to	call	everything	a	value.
+- Rust doesn’t use the term object much, preferring to call everything a value.
 
-- Only	calls	through	&mut	Write incur	the	overhead	of	a	virtual	method	call  (Traits).
+- Only calls through &mut Write incur the overhead of a virtual method call  (Traits).
 
-- Possible	reason	to	use	trait	objects	is	to	reduce	the	total	amount of	compiled	code.	Rust	may	have	to	compile	a	generic	function	many times,	once	for	each	type	it’s	used	with.
+- Possible reason to use trait objects is to reduce the total amount of compiled code. Rust may have to compile a generic function many times, once for each type it’s used with.
 
-- generics	have two	important	advantages	over	trait	objects: 
-1. Speed: 	Rust	can	evaluate it	at	compile	time,	so	that	there’s	no	runtime	cost	at	all.
-2. not	every	trait	can	support	trait objects.
+- generics have two important advantages over trait objects: 
+1. Speed:  Rust can evaluate it at compile time, so that there’s no runtime cost at all.
+2. not every trait can support trait objects.
 
-- when	you	implement	a	trait,	either	the	trait	or	the	type must	be	new	in	the	current	crate.	This	is	called	the	coherence	rule.	It helps	Rust	ensure	that	trait	implementations	are	unique.	Your	code	can’t impl	Write	for	u8,	because	both	Write	and	u8	are	defined	in	the	standard library.	If	Rust	let	crates	do	that,	there	could	be	multiple	implementations of	Write	for	u8,	in	different	crates,	and	Rust	would	have	no	reasonable way	to	decide	which	implementation	to	use	for	a	given	method	call.
+- when you implement a trait, either the trait or the type must be new in the current crate. This is called the coherence rule. It helps Rust ensure that trait implementations are unique. Your code can’t impl Write for u8, because both Write and u8 are defined in the standard library. If Rust let crates do that, there could be multiple implementations of Write for u8, in different crates, and Rust would have no reasonable way to decide which implementation to use for a given method call.
 
-- Rust	supports polymorphism	with	two	related	features:	traits	and	generics.
+- Rust supports polymorphism with two related features: traits and generics.
 
-- A	trait	that	uses	the	Self	type	is	incompatible	with	trait	objects.
+- A trait that uses the Self type is incompatible with trait objects.
 
 - str and [T] types denote sets of values of varying sizes, they are unsized types.
 
 - Rust can’t store unsized values in variables or pass them as arguments.  You can only deal with them through pointers like &str or Box<Write>, which themselves are sized.
 
 - A mutable slice &mut [T] lets you read and modify elements, but can’t be shared; a shared slice &[T] lets you share access among several readers, but doesn’t let you modify elements.
+
+- You can “borrow a reference” to a value; references are nonowning pointers, with limited lifetimes.
+
+- Like C and C++, Rust puts plain string literals like "udon" in read-only memory, so for a clearer comparison with the C++ and Python examples, we call to_string here to get heap-allocated String values.
+
+- Rust tries to choose the smallest lifetime that works.
+
+- Loops are expressions in Rust, but they don’t produce useful values. The value of a loop is ().
