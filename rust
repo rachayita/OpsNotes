@@ -1,6 +1,6 @@
 - Rust is designed to use ahead-of-time compilation: the translation of your entire program to machine code is completed before it ever begins execution.
 
-- If your program compiles, itis free of data races. All Rust functions are thread-safe.
+- If your program compiles, it is free of data races. All Rust functions are thread-safe.
 
 - Rust generally uses the u8 type for byte values. For example, reading data from a file or socket yields a stream of u8 values.
 
@@ -16,13 +16,11 @@
 
 - Just like vectors, hash maps store their data on the heap. 
 
-- The ? Operator Can Only Be Used in Functions That Return Result.
-
 - we can implement a trait on a type only if either the trait or the type is local to our crate. This restriction is part of a property of programs called coherence, and more specifically the orphan rule, so named because the parent type is not present.
 
 - Associated methods do not have self as a parameter. They are used for creating new instance of struct.
 
-- Note that it isn’t possible to call the default implementation from an overriding implementation of that same method. 
+- It isn’t possible to call the default implementation from an overriding implementation of that same method. 
 
 - Lifetime annotations: some scope can be substituted for 'a that will satisfy this signature.
 
@@ -185,3 +183,18 @@ The ! means that exit() never returns. It’s a "divergent function".
 
 - ref is checked at compile time while RefCell at runtime(panic).
 
+- There is one unusual rule about trait methods: the trait itself must be in scope. Otherwise, all its methods are hidden.
+
+- Lifetimes never have any impact on machine code. Only differing types cause Rust to compile multiple copies of a generic function.
+
+- Rust never knows what type of value a trait object points to until run time. So even if you pass a Sink, the overhead of calling virtual methods and checking for errors still applies. The second advantage of generics is that not every trait can support trait objects. Traits support several features, such as static methods, that work only with generics: they rule out trait objects entirely.
+
+- A String uses a Vec<u8> internally to hold its text, so String need not implement Drop itself; it lets its Vec take care of freeing the characters.
+
+- If a type implements Drop, it cannot implement the Copy trait. As a rule of thumb, any type that needs to do something special when a value is dropped cannot be Copy.
+
+- enums are sized: no matter which variant is actually present, an enum always occupies enough space to hold its largest variant.
+
+- a Vec<T> owns a heap-allocated buffer whose size can vary, the Vec value itself is a pointer to the buffer, its capacity, and its length, so Vec<T> is a sized type.
+
+- By default, struct and enum types are not Copy, but you can implement Copy on them also.

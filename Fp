@@ -1,3 +1,11 @@
+# FP is just programming with functions. Functions are:
+ 
+ * Total: They return an output for every input.
+ * Deterministic: They return the same output for the same input.
+ * Pure: Their only effect is computing the output.
+
+ The rest is just composition you can learn over time.
+
 1) Referentially Transparent—in any program, the expression can be replaced by its result without changing the meaning of the program. And we say that a function is pure if its body is RT, assuming RT inputs.
 
 2) A pure function is modular and composable because it separates the logic of the computation itself from "what to do with the result & how to obtain the input"; it is a black box. A pure function has no observable effect on the execution of the program other than to compute a result given its inputs; we say that it has no side effects.
