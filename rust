@@ -198,3 +198,30 @@ The ! means that exit() never returns. It’s a "divergent function".
 - a Vec<T> owns a heap-allocated buffer whose size can vary, the Vec value itself is a pointer to the buffer, its capacity, and its length, so Vec<T> is a sized type.
 
 - By default, struct and enum types are not Copy, but you can implement Copy on them also.
+
+- Rust does deref coercion when it finds types and trait implementations in three cases:
+   # From &T to &U when T: Deref<Target=U>
+   # From &mut T to &mut U when T: DerefMut<Target=U>
+   # From &mut T to &U when T: Deref<Target=U>
+
+- Rust doesn’t try deref coercions to satisfy type variable bounds.
+
+- Orphan rule: external traits cannot be implemented on external types
+    # Crate A defines a public trait T.
+    # Crate B defines a public struct S.
+    # Crate C wants to implement T for S.
+				Current orphan rules prevent this, even though it would be completely coherent.
+
+- Only implement Into trait if a conversion to a type outside the current crate is required. From cannot do these type of conversions because of Rust's orphaning rules. See Into for more details.
+
+- Prefer using Into trait over using From when specifying trait bounds on a generic function. This way, types that directly implement Into can be used as arguments as well.
+
+- The From trait is also very useful when performing error handling.
+
+- From<T> for U implies Into<U> for T
+
+- From is reflexive, which means that From<T> for T is implemented
+
+- a fn value is the memory address of the function’s machine code, just like a function pointer in C++.
+
+- Closures that drop values are not allowed to have Fn. They implement a less powerful trait, FnOnce, the trait of closures that can be called once.
