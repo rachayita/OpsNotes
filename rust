@@ -252,7 +252,20 @@ The ! means that exit() never returns. It’s a "divergent function".
     # Crate A defines a public trait T.
     # Crate B defines a public struct S.
     # Crate C wants to implement T for S.
-   - parse can parse any type that implements the FromStr trait.
+				Current orphan rules prevent this, even though it would be completely coherent.
+
+- Only implement Into trait if a conversion to a type outside the current crate is required. From cannot do these type of conversions because of Rust's orphaning rules. See Into for more details.
+
+- Prefer using Into trait over using From when specifying trait bounds on a generic function. This way, types that directly implement Into can be used as arguments as well.
+
+- The From trait is also very useful when performing error handling.
+
+- From<T> for U implies Into<U> for T
+
+- From is reflexive, which means that From<T> for T is implemented
+
+- a fn value is the memory address of the function’s machine code, just like a function pointer in C++.
+  - parse() can parse any type that implements the FromStr trait.
 
 - the annotations are meant to tell Rust how generic lifetime parameters of multiple references relate to each other
 
