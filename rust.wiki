@@ -48,9 +48,11 @@
 - As long as there are shared references to a value, not even its owner can modify it; the value is locked down.
 
 -  If you actually want to know whether two references point to the same memory, you can use std::ptr::eq, which compares them as addresses:
+   {{{ rust
      assert!(rx == ry);         // their referents are equal
      assert!(!std::ptr::eq(rx, ry)); // but occupy different addresses
-
+   }}}
+			
 - References are never null.
 
 - Rust tries to assign each reference type in your program a lifetime.
@@ -79,6 +81,7 @@
   Across the lifetime of a mutable reference, there is no other usable path to its referent, or to any value reachable from there.  
 		The only references whose lifetimes may overlap with a mutable reference are those you borrow from the mutable reference itself.
 
+{{{ rust
 let mut x = 10;
 let r1 = &x;
 let r2 = &x;     // ok: multiple shared borrows permitted
@@ -90,13 +93,13 @@ let m1 = &mut y;
 let m2 = &mut y;  // error: cannot borrow as mutable more than once
 let z = y;      // error: cannot use `y` because it was mutably borrowed
 
-It is OK to reborrow a shared reference from a shared reference:
+// It is OK to reborrow a shared reference from a shared reference:
 let mut w = (107, 109);
 let r = &w;
 let r0 = &r.0;    // ok: reborrowing shared as shared
 let m1 = &mut r.1; // error: can't reborrow shared as mutable
 
-You can reborrow from a mutable reference:
+// You can reborrow from a mutable reference:
 let mut v = (136, 139);
 let m = &mut v;
 let m0 = &mut m.0; // ok: reborrowing mutable from mutable
@@ -116,6 +119,7 @@ let p = &x;      // shared reference to i32
 assert_eq!(*p, 42);
 x += 1;       // error: cannot assign to x because it is borrowed
 assert_eq!(*p, 42);  // if you take out the assignment, this is true
+}}}
 
 - When you see expected type `()` in error msg, look for a missing semicolon first.
 
@@ -142,9 +146,9 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - Rust doesn’t use the term object much, preferring to call everything a value.
 
 - Only calls through &mut Write incur the overhead of a virtual method call  (Traits).
-================================================================================
+----
 
->> trait object
+== trait object ==
 
 - trait object is an opaque value of another type that implements a set of traits. The set of traits is made up of an `object safe` base trait plus any number of auto trait
 
@@ -165,8 +169,8 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - Possible reason to use trait objects is to reduce the total amount of compiled code. Rust may have to compile a generic function many times, once for each type it’s used with.
 
 - generics have two important advantages over trait objects: 
-1. Speed:  Rust can evaluate it at compile time, so that there’s no runtime cost at all.
-2. not every trait can support trait objects.
+    1. Speed:  Rust can evaluate it at compile time, so that there’s no runtime cost at all.
+    2. not every trait can support trait objects.
 
 - Rust never knows what type of value a trait object points to until run time. So even if you pass a Sink, the overhead of calling virtual methods and checking for errors still applies. 
   The second advantage of generics is that not every trait can support trait objects. 
@@ -191,9 +195,9 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - Unlike generic parameters or `impl Trait`, the compiler doesnot know the concrete type that is being passed. That is, the type has been erased. As such, a `dyn Trait` reference contains two pointers. One pointer goes to the data(eg. an instance of a struct). Another poiner goes to a map of method call names to a function pointers (known as virtual method table or vtable). At runtime, when a method needs to be called on the `dyn Trait`, the vtable is consulted to get the function pointer and then that function pointer is called. It has additional runtime cost. Also, method cannot be inlined by compiler.
 
 - `dyn Trait` produce smaller code than `impl Trait` / generic parameters as the method won't be duplicated for each concrete type
-================================================================================
+----
 
->> object safety
+== object safety ==
 
 - a trait object can only be constructed out of traits that satisfy certain restrictions, which are collectively called 'object safety'
 
@@ -222,7 +226,7 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - Like C and C++, Rust puts plain string literals like "udon" in read-only memory, so for a clearer comparison with the C++ and Python examples, we call to_string here to get heap-allocated String values.
 
 - Rust tries to choose the smallest lifetime that works.
-================================================================================
+----
 
 - Loops are expressions in Rust, but they don’t produce useful values. The value of a loop is ().
 
@@ -242,8 +246,8 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 
 -  Each crate is a Rust project
 
-================================================================================
->> Cargo
+----
+== cargo ==
 
 - Invoke the cargo run command from any directory in the package to build and run our program
 
@@ -257,13 +261,12 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 
 - release builds run faster, but takes longer to compile, they don't check for integer overflow, skip debug_assert!() assertions, and stack traces the generate are less reliable
 
-- --------------------------------------------------------------
-  command line                cargo.toml section
-  --------------------------------------------------------------
-  cargo build                 [profile.debug]
-  cargo build --release       [profile.release]
-  cargo test                  [profile.test]
-  --------------------------------------------------------------
+| command line          | cargo.toml section |
+| ----                  | ----               |
+| cargo build           | [profile.debug]    |
+| cargo build --release | [profile.release]  |
+| cargo test            | [profile.test]     |
+|                       |                    |
 
   [profile.release]
   debug = true  #enable debug symbols in release builds
@@ -276,7 +279,7 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 
 - cargo test --doc to only run documentation test
 
-================================================================================
+----
 
 - Modules are Rust’s namespaces. They’re containers for the functions, types, constants, and so on that make up your Rust program or library. Whereas crates are about code sharing between projects, modules are about code organization within a project.
 
@@ -320,16 +323,16 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - By default, struct and enum types are not Copy, but you can implement Copy on them also.
 
 - Rust does deref coercion when it finds types and trait implementations in three cases:
-   # From &T to &U when T: Deref<Target=U>
-   # From &mut T to &mut U when T: DerefMut<Target=U>
-   # From &mut T to &U when T: Deref<Target=U>
+   * From &T to &U when T: Deref<Target=U>
+   * From &mut T to &mut U when T: DerefMut<Target=U>
+   * From &mut T to &U when T: Deref<Target=U>
 
 - Rust doesn’t try deref coercions to satisfy type variable bounds.
 
 - Orphan rule: external traits cannot be implemented on external types
-    # Crate A defines a public trait T.
-    # Crate B defines a public struct S.
-    # Crate C wants to implement T for S.
+    * Crate A defines a public trait T.
+    * Crate B defines a public struct S.
+    * Crate C wants to implement T for S.
 				Current orphan rules prevent this, even though it would be completely coherent.
 
 - Only implement Into trait if a conversion to a type outside the current crate is required. From cannot do these type of conversions because of Rust's orphaning rules. See Into for more details.
@@ -344,8 +347,8 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 
 - a fn value is the memory address of the function’s machine code, just like a function pointer in C++.
   - parse() can parse any type that implements the FromStr trait.
-================================================================================
->> lifetime
+----
+== lifetime ==
 
 - the annotations are meant to tell Rust how generic lifetime parameters of multiple references relate to each other
 
@@ -384,8 +387,8 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 - "{:?}" is Debug format specifier that only work for things that has Debug trait
 - "{:#?}" for pretty-print
 
-================================================================================
->> unsafe
+----
+== unsafe ==
 
 - unsafe superpower includes:
   - dereference a pointer
@@ -404,8 +407,8 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 
 - orphan rule can be bypassed using Newtype pattern using Wrapper struct to hold instance of the type.If we want the Newtype to have every method the inner type has, implementing `Deref` trait on the Wrapper to return the inner type would be a solution
 
-===============================================================================
->> dynamically sized type (DST) or unsized type
+----
+== dynamically sized type (DST) or unsized type ==
 
 - ex: str: we can't know how long the string is untill runtime, means we can't crate the variable of type str nor can we take an argument of type str
 
@@ -429,9 +432,9 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 										...
   }
 		This syntax is only available for Sized, not any other trait
-================================================================================
+----
 
->> std::cell::Cell
+== std::cell::Cell ==
 
 - if we can't get reference to a value then mutating it is fine
 
@@ -456,10 +459,9 @@ The third rule is if there are multiple input lifetime parameters, but one of th
   - implementation details of logically-immutable methods
   - mutating implementations of Clone
 
-- 
-================================================================================
+----
 
->> std::boxed::Box<T>
+== std::boxed::Box<T> ==
 
 - don't have performance overhead other than storing data on heap instead of stack
 
@@ -483,22 +485,22 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 - variables are dropped in the reverse oreder of their creation
 
 - Rust doesn't let you call the Drop trait's drop method manually, instead you have to call the std::mem::drop function if you want forced drop before the end of its scope
-================================================================================
+----
 
->> std::rc::Rc<T>
+== std::rc::Rc<T> ==
 
 - works in single threaded scenario
-================================================================================
+----
 
->> Iterator
+== Iterator ==
 
 - iter() give references
 
 - has only one item type therefore associtative types are used. Type checking becomes less complicated
 
-================================================================================
+----
 
->> const
+== const ==
 
 - must be explicitly typed
 
@@ -509,9 +511,9 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 - const are inlined wherever they are used, making using them identical to simply replace the name of the const with its value. Static variable point to a single location in memory, which all accesses share. This means  that, unlike with constants, they can't have destructors, and act as a single value across the entire code base.
 
 - both are in SCREAMING_SNAKE_CASE
-================================================================================
+----
 
->> doc
+== doc ==
 
 - cargo doc - to build documentation in target/doc
 - cargo test --doc - to only run documentation test  
@@ -519,9 +521,9 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 - //! generate library doc for enclosing item
 
 
-================================================================================
+----
 
->> closure
+== closure ==
 - rust offers two ways for closure to get data from enclosing scopes:
   - moves
 		- borrowing

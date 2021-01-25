@@ -1,7 +1,7 @@
-########## cmd to show video driver ##########
+ == cmd to show video driver ==
 :~$ lshw -c video     
 
-########## eclipse jvm linking ##########
+ == eclipse jvm linking ==
 
 1)open eclipse.ini file with text editor.
 2)copy your jdk path by using -vm command (vm and your path should not be in same line)
@@ -10,27 +10,27 @@ eg:
 /usr/lib/java/jdk1.7.0_75/jre/bin/java 
 3)-vm should be placed before -vmargs in eclipse.ini file.
 
-########## gen ssh keys ##########
+ == gen ssh keys ==
 
 mkdir ~/.ssh
 chmod 700 ~/.ssh
 ssh-keygen -t rsa
 
-########## cmd line json parser ##########
+== cmd line json parser ==
 1. | python -m json.tool
 2. | jq .
 
-########## trash path ##########
+== trash path ==
 ~/.local/share/Trash/files
 
-########## base64 ##########
+ == base64 == 
 $ echo -n 'scottlinux.com rocks' | base64
 c2NvdHRsaW51eC5jb20gcm9ja3MK
 
 $ echo -n c2NvdHRsaW51eC5jb20gcm9ja3MK | base64 -d
 scottlinux.com rocks
 
-########## vim ##########
+ == vim == 
 # macro recording 
     qd 	start recording to register d, or any
     ... 	your complex series of commands
@@ -41,29 +41,12 @@ scottlinux.com rocks
 
 # copy current line to X clipboard type "+yy or to paste from  the X selection type "*p
 
-
-########## SHOW GIT BRANCH ON PROMPT ##########
-### should be added to .bashrc
-
-function parse_git_branch () {
-  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
-  #git rev-parse --symbolic-full-name --abbrev-ref HEAD
-}
-
-RED="\[\033[0;31m\]"
-YELLOW="\[\033[0;33m\]"
-GREEN="\[\033[0;32m\]"
-NO_COLOR="\[\033[0m\]"
-
-PS1="$GREEN\u@\h$NO_COLOR:\w$YELLOW\$(parse_git_branch)$NO_COLOR\$ "
-
-########## .ssh/config format for multiple keys ##########
+ == .ssh/config format for multiple keys == 
 Host ANY_NAME
 HostName HOST or IP
 User USER_NAME
 IdentityFile "PATH TO id_rsa FILE"
 
-########## list open network ports and the processes ##########
+ == list open network ports and the processes == 
 netstat -lntpu
 
-########## ~~~ ##########

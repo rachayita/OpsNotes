@@ -21,11 +21,12 @@
 		*	Some type A
 		*	A binary associative operation that takes two values of type A and combines them into one.
 		*	A value of type A that is an identity for that operation.
-				
+		{{{ scala		
 				trait Monoid[A] {
 				  def op(a1: A, a2: A): A
 				  def zero: A
 				}
+		}}}
 8) A function is typically partial because it makes some assumptions about its inputs that are not implied by the input types.
 
 9) If the evaluation of an expression runs forever or throws an error instead of returning a definite value, we say that the expression does not terminate , or that it evaluates to bottom . A function f is strict if the expression f(x) evaluates to bottom for all x that evaluate to bottom.
