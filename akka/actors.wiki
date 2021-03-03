@@ -1,4 +1,4 @@
-Actors
+== Actors ==
 
 - Actor programming is reactive programming. Another way to say this is that it’s event-driven programming.
 
