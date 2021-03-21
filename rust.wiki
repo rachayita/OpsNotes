@@ -519,7 +519,6 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 
 - Iterators produce a series of values
 - collect() on an iterator turns it into a collection
-- iter() give references
 - has only one item type therefore associtative types are used
   - Type checking becomes less complicated
 - Range<type> is an iterator
@@ -536,6 +535,10 @@ trait Iterator{
 }
 }}}
 
+- There are three common methods which can create iterators from a collection:
+  - iter(), which iterates over &T
+  - iter_mut(), which iterates over &mut T
+  - into_iter(), which iterates over T
 
 ----
 
