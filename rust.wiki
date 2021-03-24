@@ -516,8 +516,8 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 ----
 
 == Iterators ==
-
-- Iterators produce a series of values
+- iterators: a way of processing a series of elements
+- iterators produce a series of values
 - collect() on an iterator turns it into a collection
 - has only one item type therefore associtative types are used
   - Type checking becomes less complicated
@@ -566,8 +566,12 @@ trait Iterator{
 ----
 
 == closure ==
+- closures: anonymous function-like construct you can store in a variable
 - it borrows: when rust creates a closure, it can automatically borrow a ref to a captured variable
   - it stands to reason: the closure refers to a captured variable, so it must have a ref to it
+
+- types are locked into the closure in first use
+  - we get a type error if we try to use a different type with the same closure
 
 - rust offers two ways for closure to get data from enclosing scopes:
   - borrowing
@@ -632,6 +636,23 @@ trait FnOnce() -> R {
 - fn flips the variance of args
 - mutable refs are invariant in their arg type
 
+----
+
+== refutability ==
+{{{ rust
+// irrefultable pattern
+let some_option_value: Option<i32> = None;
+let Some(x) = some_option_value;
+	
+// refutable pattern
+let x = 4;
+}}}
+
+- if let and while let are both refultable and irrefutable
+- Rust complains with warning if it doesn’t make sense to use if let with an irrefutable pattern
+  - ex: if let x = 5 { ... };
+
+----
 
 
 
