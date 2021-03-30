@@ -654,6 +654,9 @@ let x = 4;
 
 ----
 
+== test ==
+- `cargo test -- --nocapture` to enable print statement
+----
 
 
 
