@@ -518,6 +518,7 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 == Iterators ==
 - iterators: a way of processing a series of elements
 - iterators produce a series of values
+- iterators are lazy and do nothing unless consumed
 - collect() on an iterator turns it into a collection
 - has only one item type therefore associtative types are used
   - Type checking becomes less complicated
