@@ -519,11 +519,15 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 - iterators: a way of processing a series of elements
 - iterators produce a series of values
 - iterators are lazy and do nothing unless consumed
-- collect() on an iterator turns it into a collection
+- More calls than its size will always return `None`
+- `collect()` on an iterator turns it into a collection
 - has only one item type therefore associtative types are used
   - Type checking becomes less complicated
 - Range<type> is an iterator
 - An iterator is any value that implements the std::iter::Iterator trait
+- `size_hint()` returns a tuple where the first element is the lower bound, and the second element is the upper bound.
+  - The second half of the tuple that is returned is an `Option<usize>`
+  - A `None` here means that either there is no known upper bound, or the upper bound is larger than `usize`
 
 {{{ rust
 trait Iterator{
@@ -551,7 +555,9 @@ trait Iterator{
 
 - use constants for magic numbers and strings. There are no mut constants.
 
-- const are inlined wherever they are used, making using them identical to simply replace the name of the const with its value. Static variable point to a single location in memory, which all accesses share. This means  that, unlike with constants, they can't have destructors, and act as a single value across the entire code base.
+- const are inlined wherever they are used, making using them identical to simply replace the name of the const with its value
+  - Static variable point to a single location in memory, which all accesses share
+    - This means  that, unlike with constants, they can't have destructors, and act as a single value across the entire code base.
 
 - both are in SCREAMING_SNAKE_CASE
 ----
