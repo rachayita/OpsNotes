@@ -118,6 +118,8 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 
 - `..` can be only used once per tuple pattern
 
+- Using @ lets us test a value and save it in a variable within one pattern
+
 - The standard collections are all iterable, as are arrays and slices.
 
 - fn exit(code: i32) -> !
@@ -668,6 +670,10 @@ let x = 4;
 
 == test ==
 - `cargo test -- --nocapture` to enable print statement
+----
+
+== PhantomData ==
+- PhantomData: Zero-sized type used to mark things that “act like” they own a T.
 ----
 
 
