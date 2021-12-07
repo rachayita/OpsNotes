@@ -154,6 +154,9 @@ use std::prelude::v1::*;
 - Rust doesn’t use the term object much, preferring to call everything a value.
 
 - Only calls through &mut Write incur the overhead of a virtual method call  (Traits).
+
+- str are compared by their byte values
+
 ----
 
 == trait object ==
@@ -455,13 +458,36 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 - A mutable slice &mut [T] lets you read and modify elements, but can’t be shared; a shared slice &[T] lets you share access among several readers, but doesn’t let you modify elements
 
 - `Sized` trait to determine weather or not a type's size is known at compile time. The trait is automatically implemented for everything whose size is known at compile time. Rust implicitly adds a bound on  Sized trait to every generic function
+  - All type parameters have an implicit bound of Sized. 
+  - The special syntax ?Sized can be used to remove this bound if it’s not appropriate.
+  - The one exception is implicit `Self` type of a trait
+  - A trait doesnot have an implicit `Sized` bound as this is incompatible with trait objects
+  - A  trait need to work with all possible implementators, and thus could be any size
+  - Although rust will let you bind `Sized` to a trait, you won't will able to use it to form a trait object later
+  
+  {{{ rust
+     trait Foo { }
+     trait Bar: Sized { }
+
+     struct Impl;
+     impl Foo for Impl { }
+     impl Bar for Impl { }
+
+     let x: &dyn Foo = &Impl; // OK
+     let y: &dyn Bar = &Impl; // error: the trait `Bar` cannot be made into an object
+  }}}
 
 - By default, generic function will work only on types that have a known size at compile time. However, you can use the following special syntax to relax this restriction:
-  // ?Sized i.e that is may or may not be sized
-  fn generic<T: ?Sized>(t: &T) { // the type of parameter t switched form T to &T, need some kind of pointer
-										...
-  }
-		This syntax is only available for Sized, not any other trait
+
+  {{{ rust
+  
+     // ?Sized i.e that is may or may not be sized
+     fn generic<T: ?Sized>(t: &T) { 
+     // the type of parameter t switched from T to &T, need some kind of pointer
+     ...
+     } // This syntax is only available for Sized, not any other trait
+  }}}
+
 ----
 
 == std::cell::Cell ==
