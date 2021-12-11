@@ -701,7 +701,8 @@ let x = 4;
 - `cargo test -- --nocapture` to enable print statement
 ----
 
-== std::marker::PhantomData ==
+== std::marker::PhantomData<T> ==
+- where T: ?Sized
 - PhantomData: Zero-sized type used to mark things that “act like” they own a T.
 ----
 

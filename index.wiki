@@ -8,6 +8,6 @@
 * [[linuxOps]]
 * [[moniteringHelp]]
 * [[mysqlHelp]]
-* [[rust]]
+* [[rust/rust]]
 * [[scala]]
 * [[scalaHelp]]
