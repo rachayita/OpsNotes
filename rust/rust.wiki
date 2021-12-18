@@ -397,30 +397,44 @@ The second rule is if there is exactly one input lifetime parameter, that lifeti
 
 The third rule is if there are multiple input lifetime parameters, but one of them is &self or &mut self because this is a method, the lifetime of self is assigned to all output lifetime parameters. This third rule makes methods much nicer to read and write because fewer symbols are necessary.
 
+- `'static` reference can live for the entire duration of the program
 - Lifetime names for struct fields always need to be declared after the impl keyword and then used after the struct’s name, because those lifetimes are part of the struct’s type. In method signatures inside the impl block, references might be tied to the lifetime of references in the struct’s fields, or they might be independent.
-
-- `'static`, which means that this reference can live for the entire duration of the program
-
-- all string literals have the 'static lifetime  
-
-- let s: &'static str = "I have a static lifetime.";
-  The text of this string is stored directly in the program’s binary, which is always available.
-
-- names of static varibles are in SCREAMING_SNAKE_CASE
-
-- static variables can only store resferences with the 'static lifetime
-
-- global variables are called static varible in rust
-
-- static variables has `'static` lifetime
-
-- constants and immutable static variables might seem similar, but a subtle difference is that values in static variables have a fixed address in memory. Using the value will always access the same data. Conatants on the other hand, are allowed to duplicate their data whenever they are used. Also static variable can be mutable and it is unsafe to access or modify them.
-
 - "{}" is Display format specifier that only work for things that has Display trait
 - "{:?}" is Debug format specifier that only work for things that has Debug trait
 - "{:#?}" for pretty-print
 
 ----
+
+== const and 'static ==
+- const are static, immutable and inlined, simply replacing the const name with its value
+  - this includes usage of constants from external crates, and non-Copy types
+  - provides a convenient alternative to code duplication
+  - `'static` is the only lifetime allowed for const, don't need to use it explicitly
+  - constants may refer to the address of other constants
+    - in which case the address will have elided lifetimes where applicable
+    - compiler is, however, still at liberty to translate the constant many times, so the address referred to may not be stable
+  - must be explicitly typed
+  - use const for magic numbers and strings
+  - There are no mut constants
+  - not associated with specific memory location
+  - references to the same constant are not necessarily guaranteed to refer to same memory address
+  - constant expression may only be omitted in a trait definition
+  - constants can contain destructors
+- const, like statics, should always be in SCREAMING_SNAKE_CASE
+- `'static` variables point to a single location in memory for sharing 
+  - values in static variables have a fixed address in memory
+  - static variable can be mutable and it is unsafe to access or modify them
+  - can only store resferences with the 'static lifetime
+  - unlike with constants, they can’t have destructors
+  - act as a single value across the entire codebase
+  - global variables are called static varibles in rust
+  - `'static` reference can live for the entire duration of the program
+  - all string literals have the `'static` lifetime  
+  - let s: &'static str = "I have a static lifetime.";  
+    - text of string is stored directly in the program’s binary, which is always available
+
+----
+
 == unsafe ==
 
 - unsafe superpower includes:
@@ -581,21 +595,6 @@ trait Iterator{
   - iter_mut(), which iterates over &mut T
   - into_iter(), which iterates over T
 
-----
-
-== const ==
-
-- must be explicitly typed
-
-- only lifetime allowed id 'static, don't need to use use it explicitly
-
-- use constants for magic numbers and strings. There are no mut constants.
-
-- const are inlined wherever they are used, making using them identical to simply replace the name of the const with its value
-  - Static variable point to a single location in memory, which all accesses share
-    - This means  that, unlike with constants, they can't have destructors, and act as a single value across the entire code base.
-
-- both are in SCREAMING_SNAKE_CASE
 ----
 
 == doc ==
