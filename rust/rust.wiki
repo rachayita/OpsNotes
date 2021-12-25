@@ -410,12 +410,15 @@ The third rule is if there are multiple input lifetime parameters, but one of th
   - this includes usage of constants from external crates, and non-Copy types
   - provides a convenient alternative to code duplication
   - `'static` is the only lifetime allowed for const, don't need to use it explicitly
+    - valid for the entire time a program runs, within the scope they were declared
   - constants may refer to the address of other constants
     - in which case the address will have elided lifetimes where applicable
     - compiler is, however, still at liberty to translate the constant many times, so the address referred to may not be stable
   - must be explicitly typed
   - use const for magic numbers and strings
   - There are no mut constants
+  - const may be set only to a constant expression
+    - not to the result of a value that could only be computed at runtime
   - not associated with specific memory location
   - references to the same constant are not necessarily guaranteed to refer to same memory address
   - constant expression may only be omitted in a trait definition
@@ -599,8 +602,8 @@ trait Iterator{
 
 == doc ==
 
-- cargo doc - to build documentation in target/doc
-- cargo test --doc - to only run documentation test  
+- `cargo doc` - to build documentation in target/doc
+- `cargo test --doc` - to only run documentation test  
 - /// generate library doc for following item
 - //! generate library doc for enclosing item
 
