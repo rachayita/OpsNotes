@@ -411,9 +411,11 @@ The third rule is if there are multiple input lifetime parameters, but one of th
   - provides a convenient alternative to code duplication
   - `'static` is the only lifetime allowed for const, don't need to use it explicitly
     - valid for the entire time a program runs, within the scope they were declared
+    - any references in the initializer must have 'static lifetimes
   - constants may refer to the address of other constants
     - in which case the address will have elided lifetimes where applicable
-    - compiler is, however, still at liberty to translate the constant many times, so the address referred to may not be stable
+    - compiler is still at liberty to translate the constant many times
+      - so the address referred to may not be stable
   - must be explicitly typed
   - use const for magic numbers and strings
   - There are no mut constants
@@ -423,6 +425,8 @@ The third rule is if there are multiple input lifetime parameters, but one of th
   - references to the same constant are not necessarily guaranteed to refer to same memory address
   - constant expression may only be omitted in a trait definition
   - constants can contain destructors
+  - unlike associated const, a free const may be unnamed by using underscore instead of name
+    - As with underscore imports, macros may safely emit the same unnamed const in the same scope more than once
 - const, like statics, should always be in SCREAMING_SNAKE_CASE
 - `'static` variables point to a single location in memory for sharing 
   - values in static variables have a fixed address in memory
