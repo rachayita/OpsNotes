@@ -713,6 +713,28 @@ let x = 4;
 
 ----
 
+== std::ptr ==
+- a null pointer is never valid, not even for accesses of size zero
+- for a pointer to be valid, it is necessary, but not always sufficient,
+  - the pointer be dereferenceable
+  - memory range of given size starting at the pointer must be within bounds of a single allocated object
+  - every (stack-allocated) variable is considered a separate allocated object.
+- even for operations of size zero, the pointer must not be pointing to deallocated memory
+  - deallocation makes pointers invalid even for zero-sized operations
+  - casting any non-zero integer literal to a pointer is valid for zero-sized accesses
+    - even if some memory happens to exist at that address and gets deallocated
+    - this corresponds to writing your own allocator
+      - allocating zero-sized objects is not very hard
+      - canonical way to obtain a pointer valid for zero-sized access is `NonNull::dangling`
+- All accesses performed by functions in this module are non-atomic
+  - it is undefined behavior to perform two concurrent accesses unless both are read only
+  - this explicitly includes read_volatile and write_volatile
+  - volatile accesses cannot be used for inter-thread synchronization
+- result of casting a reference to a pointer is valid for:
+  - as long as the underlying object is live
+  - and no reference (just raw pointers) is used to access the same memory
+----
+
 == raw unsafe pointers ==
 - `*const T` or `*mut T` 
 
