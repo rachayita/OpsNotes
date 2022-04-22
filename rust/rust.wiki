@@ -747,6 +747,13 @@ let x = 4;
 
 ----
 
+== Cargo.toml ==
+- two build profiles: 
+  - [profile.dev]
+  - [profile.release]
+
+----
+
 
 
 

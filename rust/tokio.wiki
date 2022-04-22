@@ -1,0 +1,2 @@
+- return value of async fn is an anonymous type that implements Future trait
+- 
