@@ -1,2 +1,7 @@
+== async fn ==
 - return value of async fn is an anonymous type that implements Future trait
-- 
+- async fn must be executed by a runtime
+- runtime contains asynchronous task scheduler, provides evented i/o, timers, etc
+- runtime doesnot automatically start, so the main fn need to start it
+- #[tokio::main] macro transforms async fn main() into a synchronous fn main() 
+  - that initializes a runtime instance and execute the async main fn
