@@ -1,41 +1,26 @@
 = Rust =
 == about ==
 - Rust is designed to use ahead-of-time compilation: the translation of your entire program to machine code is completed before it ever begins execution.
-
 - If your program compiles, it is free of data races. All Rust functions are thread-safe.
-
 - Rust generally uses the u8 type for byte values. For example, reading data from a file or socket yields a stream of u8 values.
-
 - since the ASCII code for A is 65, the literals b'A' and 65u8 are exactly equivalent. Only  ASCII characters may appear in byte literals.
-
 - Rust requires array indices to be usize values.
-
+- blocks are also expressions, which mean they evaluate to a value.
 - assert! terminates the program with a helpful message including the source location of the failing check; this kind of abrupt termination is called a panic.
-
 - Just like vectors, hash maps store their data on the heap. 
-
 - we can implement a trait on a type only if either the trait or the type is local to our crate.
   - This restriction is part of a property of programs called coherence, and more specifically the orphan rule, so named because the parent type is not present.
-
 - Associated methods do not have self as a parameter. They are used for creating new instance of struct.
-
 - It isn’t possible to call the default implementation from an overriding implementation of that same method. 
-
 - If all the fields of your struct are themselves Copy, then you can make the type Copy as well by placing the attribute #[derive(Copy, Clone)] above the definition. 
-
 - Copy types are very limited in which types they can contain, whereas non-Copy types can use heap allocation and own other sorts of resources. 
   So making a type Copy represents a serious commitment on the part of the implementer: if it’s necessary to change it to non-Copy later, much of the code that uses it will probably need to be adapted.
-
 - indirection means that instead of storing a value directly, we will change the datastrucuture to store the value indirectly by storing a pointer to the value instead
-
 - The Rc and Arc types are very similar; 
   the only difference between them is that an Arc is safe to share between threads directly—the name Arc is short for atomic reference count
-		—whereas a plain Rc uses faster non- thread-safe code to update its reference count.
-
+  —whereas a plain Rc uses faster non- thread-safe code to update its reference count.
 - You can think of the distinction between shared and mutable references as a way to enforce a multiple readers or single writer rule at compile time.
-
 - As long as there are shared references to a value, not even its owner can modify it; the value is locked down.
-
 -  If you actually want to know whether two references point to the same memory, you can use std::ptr::eq, which compares them as addresses:
    {{{ rust
      assert!(rx == ry);         // their referents are equal
@@ -43,29 +28,19 @@
    }}}
 			
 - References are never null.
-
 - Rust tries to assign each reference type in your program a lifetime.
-
 - At runtime, a reference is nothing but an address; its lifetime is part of its type and has no runtime representation.
-
 - When a function takes a single reference as an argument, and returns a single reference, Rust assumes that the two must have the same lifetime.
-
 - Function argument and return value must have the same lifetime.
-
 - if your function doesn’t return any references, then you never need to write out lifetimes for your parameters. Rust just assigns a distinct lifetime to each spot that needs one.
-
 - borrowing rules:
   - at any given time, you can have either (but not both of) one mutable reference or any number of immutable reference
 - references must always be valid
-
 - No lifetime annotation required when self is a parameter.
-
 - Throughout its lifetime, a shared reference makes its referent read-only: you may not assign to the referent or move its value elsewhere.
-
 - Shared access is read-only access. Values borrowed by shared references are read-only. 
   Across the lifetime of a shared reference, neither its referent, nor anything reachable from that referent, can be changed by anything. 
 		There exist no live mutablereferences to anything in that structure; its owner is held read- only; and so on. It’s really frozen.
-
 - Mutable access is exclusive access. A value borrowed by a mutable reference is reachable exclusively via that reference.  
   Across the lifetime of a mutable reference, there is no other usable path to its referent, or to any value reachable from there.  
 		The only references whose lifetimes may overlap with a mutable reference are those you borrow from the mutable reference itself.
@@ -111,17 +86,11 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 }}}
 
 - When you see expected type `()` in error msg, look for a missing semicolon first.
-
 - All blocks of an if and match expression must produce values of the same type.
-
 - Blocks are also expressions, which mean they evaluate to a value
-
 - `..` can be only used once per tuple pattern
-
 - Using @ lets us test a value and save it in a variable within one pattern
-
 - The standard collections are all iterable, as are arrays and slices.
-
 - fn exit(code: i32) -> !
   - The ! means that exit() never returns. It’s a "divergent function".
   - The ! is known as empty type or never type because it has no value
@@ -131,54 +100,34 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
   - expressions of type ! can be coerced into any other type
 
 - The symbol ::<...> is affectionately known in the Rust community as the turbofish.
-
 - The double-colon, ::, operates on namespaces
-
 - use directives can be used to "bring in scope" names from other namespace
-
 - Within use directives, curly brackets have another meaning: they're "globs"
-
 - A panic is not a crash. It’s not undefined behavior. It’s more like a RuntimeException in Java.
-
 - Types are namespaces too, and methods can be called as regular functions
-
 - Rust inserts this at the beginning of every module
 {{{ rust
 use std::prelude::v1::*;
 }}}
 
 - Rust doesn’t have exceptions.
-
 - ? can only be used in functions that have a Result return type.
-
 - Rust doesn’t use the term object much, preferring to call everything a value.
-
 - Only calls through &mut Write incur the overhead of a virtual method call  (Traits).
-
 - str are compared by their byte values
-
 ----
 
 == trait object ==
-
 - trait object is an opaque value of another type that implements a set of traits. The set of traits is made up of an `object safe` base trait plus any number of auto trait
-
 - trait object's purpose is to allow abstraction across common behaviour
-
 - we can't add data to a trait object
-
 - generic method calls are illegal for trait object
-
 - only one copy is generated for function that takes trait object, resulting in less code bloat at the cost of requiring slower virtual function calls 
   and effectively inhibiting any chance of inlining and related optimizations from occuring
-
 - trait object must be object safe because once you have used a trait object, Rust no longer knows the concrete type that's implementing the trait. 
   If a trait method returns the concrete `Self` type, but a trait object forgets the exact type that Self is, there is no way the method can use the original concrete type
-
 - Trait objects are the right choice whenever you need a collection of values of mixed types, all together.
-
 - Possible reason to use trait objects is to reduce the total amount of compiled code. Rust may have to compile a generic function many times, once for each type it’s used with.
-
 - generics have two important advantages over trait objects: 
     1. Speed:  Rust can evaluate it at compile time, so that there’s no runtime cost at all.
     2. not every trait can support trait objects.
@@ -188,21 +137,13 @@ use std::prelude::v1::*;
 		Traits support several features, such as static methods, that work only with generics: they rule out trait objects entirely.
 
 - A trait that uses the Self type is incompatible with trait objects
-
 - with trait objects, you lose the type information Rust needs to type-check your program
-
 - a trait object points to both an instance of a type implementing our specified trait as well as a table used to lookup trait methods on that type at runtime
-
 - we create a trait object by specifying some sort of pointer, such as & reference or Box<T> smart poiner, then the dyn keyword, and then specifying the relevent trait
-
 - Rust doesn't have inheritance but bounds
-
 - `Trait: Sized` states that the trait itself can only be implemented for a type that already implements `Sized`
-
 - `fn method(&self) where Self: Sized` states that only types that implements `Sized` can implement this method
-
 - `dyn` is a prefix of a trait object's type. It is used to highlight that calls to methods on the associated Trait are dynamically dispatched. To use the trait this way, it must be 'object safe'
-
 - Unlike generic parameters or `impl Trait`, the compiler doesnot know the concrete type that is being passed. That is, the type has been erased. As such, a `dyn Trait` reference contains two pointers. One pointer goes to the data(eg. an instance of a struct). Another poiner goes to a map of method call names to a function pointers (known as virtual method table or vtable). At runtime, when a method needs to be called on the `dyn Trait`, the vtable is consulted to get the function pointer and then that function pointer is called. It has additional runtime cost. Also, method cannot be inlined by compiler.
 
 - `dyn Trait` produce smaller code than `impl Trait` / generic parameters as the method won't be duplicated for each concrete type
