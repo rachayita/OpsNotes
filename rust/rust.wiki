@@ -88,7 +88,9 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - When you see expected type `()` in error msg, look for a missing semicolon first.
 - All blocks of an if and match expression must produce values of the same type.
 - Blocks are also expressions, which mean they evaluate to a value
+- `::` operates on namespace
 - `..` can be only used once per tuple pattern
+- `use` directives can be used to "bring in scope" names from other namespace
 - Using @ lets us test a value and save it in a variable within one pattern
 - The standard collections are all iterable, as are arrays and slices.
 - fn exit(code: i32) -> !
@@ -181,45 +183,32 @@ let s2 = struct2 {
     Pin<P> where P is one of the types above
 
 - when you implement a trait, either the trait or the type must be new in the current crate. This is called the coherence rule. It helps Rust ensure that trait implementations are unique. Your code can’t impl Write for u8, because both Write and u8 are defined in the standard library. If Rust let crates do that, there could be multiple implementations of Write for u8, in different crates, and Rust would have no reasonable way to decide which implementation to use for a given method call.
-
 - You can “borrow a reference” to a value; references are nonowning pointers, with limited lifetimes.
-
 - Like C and C++, Rust puts plain string literals like "udon" in read-only memory, so for a clearer comparison with the C++ and Python examples, we call to_string here to get heap-allocated String values.
-
 - Rust tries to choose the smallest lifetime that works.
 ----
 
 - Loops are expressions in Rust, but they don’t produce useful values. The value of a loop is ().
-
 - Expressions that don’t finish normally are assigned the special type !, and they’re exempt from the rules about types having to match.
-
 - fn exit(code: i32) -> !
     The ! means that exit() never returns. It’s a divergent function.
-
 - The symbol ::<...> is affectionately known in the Rust community as the turbofish.
-
 - The value to the left of the dot or brackets[] is automatically dereferenced.
-
 - Expressions like these three are called lvalues, because they can appear on the left side of an assignment:
     game.black_pawns // struct field
     coords.1 // tuple element
     pieces[i] // array element
 
 -  Each crate is a Rust project
-
 ----
+
 == cargo ==
 
 - Invoke the cargo run command from any directory in the package to build and run our program
-
 - Cargo places the executable in the target subdirectory at the top of the package
-
 - what crates are and how they work together is to use cargo build with the --verbose flag
-
 - when compiling libraries, cargo uses the `--crate-type lib` option which tells rustc not to look for main() but instead produce an .rlib file.
-
 - `cargo build --release` produces optimized build
-
 - release builds run faster, but takes longer to compile, they don't check for integer overflow, skip debug_assert!() assertions, and stack traces the generate are less reliable
 
 | command line          | cargo.toml section |
@@ -235,54 +224,31 @@ let s2 = struct2 {
   the debug setting controls -g option to rustc
 
 - `cargo test math` runs all tests that contain math somewhere in their name
-
 - cargo test - to run all test
-
 - cargo test --doc to only run documentation test
-
 ----
 
 - Modules are Rust’s namespaces. They’re containers for the functions, types, constants, and so on that make up your Rust program or library. Whereas crates are about code sharing between projects, modules are about code organization within a project.
-
 - rust never compiles its modules separately, even if they are in separate files: when you build a rust crate, you are recompiling all of its modules.  
-
 - super is an alias for the parent module. Similarly, self is an alias for the current module.
-
 - While paths in imports are treated as absolute paths by default, self and super let you override that and import from relative paths.
-
 - Submodules can access private items in their parent modules, but they have to import each one by name. use super::*; only imports items that are marked pub.
-
 - Methods are also known as associated functions, since they’re associated with a specific type. The opposite of an associated function is a free function, one that is not defined as an impl block’s item.
-
 - ref is checked at compile time while RefCell at runtime(panic).
-
 - There is one unusual rule about trait methods: the trait itself must be in scope. Otherwise, all its methods are hidden.
-
 - Lifetimes never have any impact on machine code. Only differing types cause Rust to compile multiple copies of a generic function.
-
 - use statics for larger amounts of data, or any time you'll need to borrow a reference to the constant value
 . Statics can be marked mut but not thread-safe
-
 - use and extern crate declarations are items too. Even though they are just aliases, they can be pub
-
 - to attach an attribute to a whole crate, add it at the top of main.rs or lib.rs file, before any items, and write #! instead of #
-
 - assert_eq!(v1, v2) is just like assert!(v1 == v2) except that if the assertion fails, the error message shows both values
-
 - use debug_assert!() and debug_assert_eq!() instead, to write assertions that are checked only in debug builds
-
 - to test error cases, add the #[should_panic] attribute
-
 - A String uses a Vec<u8> internally to hold its text, so String need not implement Drop itself; it lets its Vec take care of freeing the characters.
-
 - If a type implements Drop, it cannot implement the Copy trait. As a rule of thumb, any type that needs to do something special when a value is dropped cannot be Copy.
-
 - enums are sized: no matter which variant is actually present, an enum always occupies enough space to hold its largest variant.
-
 - a Vec<T> owns a heap-allocated buffer whose size can vary, the Vec value itself is a pointer to the buffer, its capacity, and its length, so Vec<T> is a sized type.
-
 - By default, struct and enum types are not Copy, but you can implement Copy on them also.
-
 - Rust does deref coercion when it finds types and trait implementations in three cases:
    * From &T to &U when T: Deref<Target=U>
    * From &mut T to &mut U when T: DerefMut<Target=U>
@@ -294,18 +260,12 @@ let s2 = struct2 {
     * Crate A defines a public trait T.
     * Crate B defines a public struct S.
     * Crate C wants to implement T for S.
-				Current orphan rules prevent this, even though it would be completely coherent.
-
+- Current orphan rules prevent this, even though it would be completely coherent.
 - Only implement Into trait if a conversion to a type outside the current crate is required. From cannot do these type of conversions because of Rust's orphaning rules. See Into for more details.
-
 - Prefer using Into trait over using From when specifying trait bounds on a generic function. This way, types that directly implement Into can be used as arguments as well.
-
 - The From trait is also very useful when performing error handling.
-
 - From<T> for U implies Into<U> for T
-
 - From is reflexive, which means that From<T> for T is implemented
-
 - a fn value is the memory address of the function’s machine code, just like a function pointer in C++.
   - parse() can parse any type that implements the FromStr trait.
 ----
@@ -313,31 +273,19 @@ let s2 = struct2 {
 == lifetime ==
 
 - Lifetime annotations: some scope can be substituted for 'a that will satisfy this signature
-
 - Every reference has a lifetime and that you need to specify lifetime parameters for functions or structs that use references.
-
 - Most of the time, the lifetime problem results from attempting to create a dangling reference or a mismatch of the available lifetimes.
-
 - Lifetime annotation: The data returned by the function will live as long as the data passed into the function in the argument.
   - First, the moves always apply to the value proper, not the heapstorage they own. 
   - Second, the Rust compiler’s code generation is good at “seeing through” all these moves; in practice, the machine code often stores the value directly where it belongs.
-  
 - rust ensures safety by using lifetimes instead of garbage collection, which makes rust fast
-
 - the annotations are meant to tell Rust how generic lifetime parameters of multiple references relate to each other
-
 -  struct lifetime annotation means an instance of struct can’t outlive the reference it holds in its part field
-
 - Lifetimes on function or method parameters are called input lifetimes, and lifetimes on return values are called output lifetimes.
-
 - These rules apply to fn definitions as well as impl blocks.
-
 The first rule is that each parameter that is a reference gets its own lifetime parameter. In other words, a function with one parameter gets one lifetime parameter: fn foo<'a>(x: &'a i32); a function with two parameters gets two separate lifetime parameters: fn foo<'a, 'b>(x: &'a i32, y: &'b i32); and so on.
-
 The second rule is if there is exactly one input lifetime parameter, that lifetime is assigned to all output lifetime parameters: fn foo<'a>(x: &'a i32) -> &'a i32.
-
 The third rule is if there are multiple input lifetime parameters, but one of them is &self or &mut self because this is a method, the lifetime of self is assigned to all output lifetime parameters. This third rule makes methods much nicer to read and write because fewer symbols are necessary.
-
 - `'static` reference can live for the entire duration of the program
 - Lifetime names for struct fields always need to be declared after the impl keyword and then used after the struct’s name, because those lifetimes are part of the struct’s type. In method signatures inside the impl block, references might be tied to the lifetime of references in the struct’s fields, or they might be independent.
 - "{}" is Display format specifier that only work for things that has Display trait
@@ -454,54 +402,37 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 
 == std::cell::Cell ==
 
-- if we can't get reference to a value then mutating it is fine
-
+- if we can't get reference to a value then mutating it is f
 - not allowed to cast a shared reference to exclusive reference, except `std::cell::UnsafeCell`
-
 - Cell and RefCell allow sharing or aliasing(&T) with mutability(&mut T) in a controlled manner but in a single threaded way i.e. not thread safe and will give compile-time error
-
 - do not implement `Sync` and provides interior mutability instead of Rust's inherited mutability
-
 - RefCell enforces borrowing rules at runtime. The advantage is that certain memory-safe scenarios are allowed, whereas they are disallowed by compile-time check
-
 - problems like 'Halting' are impossible to detect
-
 - have single owner
-
 - RefCell uses lifetime for dynamic borrowing which is process by that claim temporary, exclusive, mutable access to the inner value and tracked at runtime. It is possible to attempt to borrow a value that is already mutably  borrowed which results in thread pacic.
-
 - if we had not let the previous borrow of the cache fall out of scope then the subsequent borrow would cause a dynamic thread panic. This is the major hazard of using RefCell
-
 - when to choose interior mutability:
   - introdicing mutabilitly inside of something immutable
   - implementation details of logically-immutable methods
   - mutating implementations of Clone
-
 ----
 
 == std::boxed::Box<T> ==
 
 - don't have performance overhead other than storing data on heap instead of stack
-
 - situations to use Box
   - when size not known at compile time and want to use that value of that type in a context that requires exact size
   - when you have a large amount of data and want to transfer ownership but ensure the data won't be copied when you do so
   - when you want to own a value and you care only that it's a type that implemants a particular trait rather than being a specific type
-
 - the reason the deref method returns a reference to a value, and then the plain dereference outside the patentheses in `*(y.deref())` is still necessary, is the ownership system. If the deref method returned the value directly instead of reference to the value, the value would be moved out of the self. So we don't want to take the ownership of the inner value
-
 - deref coercion works only on types that implement the `Deref` trait. Deref coercion converts such a type into a reference to anther type. For ex. deref coercion converts &String to &str because String implements the Deref trait such that it returns str. Deref coercion happens automatically when we pass a reference to a particular type's value as an argument to a function or method that doesn't match parameter type in the function or method definition. A sequence of calls to the deref method converts the type we provided into the type the parameter needs
-
 - the Deref trait is defined for the types involved, Rust will analyze the types and use Deref::deref as many times as necessary to get a reference to match the paramerter's type. The number of times that Deref::deref needs to be inserted is resolved at the compile time, so there is no runtime penalty for taking advantage of deref coercion
-
 - Rust does deref coercion when it finds types and trait implementations in three cases:
   - From &T to &U when T: Deref<Target=U>
   - From &mut T to &mut U when T: DerefMut<Target=U>
   - From &mut T to &U when T: Deref<Target=U>
   The third case is trickier: Rust will also coerce a mutable reference to an immutable one but the reverse is not possible. Because of the borrowing rules, if you have a mutable reference, that mutable reference must be the only reference to that data otherwise the program wouldn't compile. Converting one mutable reference to one immutable reference will never break the borrowing rule. Converting an immutable reference to a mutable reference would require that the initial immutable referenc is the only immutable reference to that data, but the borrowing rules don't guarantee that. Therefore, Rust can't make the assumption that converting an immutable reference to a mutable reference is possible
-
 - variables are dropped in the reverse oreder of their creation
-
 - Rust doesn't let you call the Drop trait's drop method manually, instead you have to call the std::mem::drop function if you want forced drop before the end of its scope
 ----
 
@@ -559,24 +490,18 @@ trait Iterator{
 - closures: anonymous function-like construct you can store in a variable
 - it borrows: when rust creates a closure, it can automatically borrow a ref to a captured variable
   - it stands to reason: the closure refers to a captured variable, so it must have a ref to it
-
 - types are locked into the closure in first use
   - we get a type error if we try to use a different type with the same closure
-
 - rust offers two ways for closure to get data from enclosing scopes:
   - borrowing
   - moves
-
 - moving a copyable type like i32 will be copied instead
-
 - moving contributes to thread safety as there is no sharing
-
 - function has types eg: type fn(&City) -> i64
   - fn(&City) -> bool // fn type (functions only)
   - Fn(&City) -> bool // Fn trait (both functions and closures)
     - this trait is automatically implemented by all the functions and closures
   - closure is callable but its not a fn
-
 - a function value is the memory address of the function's machine code, just like function pointer in c++
 - faster and safer than function pointers
 - fast enough that can be used in performace sensitive code
@@ -584,7 +509,6 @@ trait Iterator{
 - whenever compiler knows the type of closure you are calling, it can inline the code for that closure
   - this makes it ok to use closures in tight loops
   - often the compiler can inline all calls to a closure
-
 
 {{{ rust
 // Pseudocode for `Fn`, `FnMut` and `FnOnce` traits with no arguments.
@@ -620,12 +544,11 @@ trait FnOnce() -> R {
     - not safe to store closure if it contains borrowed references to variables that are about to go out of scope
       - therefore 'static lifetime is added
   - code that works  with closures usually needs to be generic
-
 ----
+
 == variance ==
 - fn flips the variance of args
 - mutable refs are invariant in their arg type
-
 ----
 
 == refutability ==
@@ -641,7 +564,6 @@ let x = 4;
 - if let and while let are both refultable and irrefutable
 - Rust complains with warning if it doesn’t make sense to use if let with an irrefutable pattern
   - ex: if let x = 5 { ... };
-
 ----
 
 == test ==
@@ -658,7 +580,6 @@ let x = 4;
   - like PhantomData<&'a T> (ideally) or PhantomData<*const T> (if no lifetime applies)
   - so as not to indicate ownership 
 - phantom type parameter: is simply a type parameter which is never used
-
 ----
 
 == std::ptr ==
@@ -685,14 +606,12 @@ let x = 4;
 
 == raw unsafe pointers ==
 - `*const T` or `*mut T` 
-
 ----
 
 == Cargo.toml ==
 - two build profiles: 
   - [profile.dev]
   - [profile.release]
-
 ----
 
 
