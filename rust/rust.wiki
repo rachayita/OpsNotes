@@ -260,6 +260,11 @@ let s2 = struct2 {
     * Crate A defines a public trait T.
     * Crate B defines a public struct S.
     * Crate C wants to implement T for S.
+- You can implement:
+  - one of your traits on anyone's type
+  - anyone's trait on one of your types
+  - but not a foreign trait on a foreign type
+  - these are called the "orphan rules"
 - Current orphan rules prevent this, even though it would be completely coherent.
 - Only implement Into trait if a conversion to a type outside the current crate is required. From cannot do these type of conversions because of Rust's orphaning rules. See Into for more details.
 - Prefer using Into trait over using From when specifying trait bounds on a generic function. This way, types that directly implement Into can be used as arguments as well.
@@ -278,6 +283,7 @@ let s2 = struct2 {
 - Lifetime annotation: The data returned by the function will live as long as the data passed into the function in the argument.
   - First, the moves always apply to the value proper, not the heapstorage they own. 
   - Second, the Rust compiler’s code generation is good at “seeing through” all these moves; in practice, the machine code often stores the value directly where it belongs.
+- functions that take references are generic, lifetimes are generic parameters
 - rust ensures safety by using lifetimes instead of garbage collection, which makes rust fast
 - the annotations are meant to tell Rust how generic lifetime parameters of multiple references relate to each other
 -  struct lifetime annotation means an instance of struct can’t outlive the reference it holds in its part field
@@ -288,9 +294,9 @@ The second rule is if there is exactly one input lifetime parameter, that lifeti
 The third rule is if there are multiple input lifetime parameters, but one of them is &self or &mut self because this is a method, the lifetime of self is assigned to all output lifetime parameters. This third rule makes methods much nicer to read and write because fewer symbols are necessary.
 - `'static` reference can live for the entire duration of the program
 - Lifetime names for struct fields always need to be declared after the impl keyword and then used after the struct’s name, because those lifetimes are part of the struct’s type. In method signatures inside the impl block, references might be tied to the lifetime of references in the struct’s fields, or they might be independent.
-- "{}" is Display format specifier that only work for things that has Display trait
-- "{:?}" is Debug format specifier that only work for things that has Debug trait
-- "{:#?}" for pretty-print
+- `{}` is Display format specifier, works for things that has Display trait
+- `{:?}` is Debug format specifier works for things that has Debug trait
+- `{:#?}` for pretty-print
 
 ----
 
