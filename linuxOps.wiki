@@ -1,27 +1,11 @@
  == cmd to show video driver ==
-:~$ lshw -c video     
-
- == eclipse jvm linking ==
-
-1)open eclipse.ini file with text editor.
-2)copy your jdk path by using -vm command (vm and your path should not be in same line)
-eg:
--vm        
-/usr/lib/java/jdk1.7.0_75/jre/bin/java 
-3)-vm should be placed before -vmargs in eclipse.ini file.
+`lshw -c video`
 
  == gen ssh keys ==
 
 mkdir ~/.ssh
 chmod 700 ~/.ssh
 ssh-keygen -t rsa
-
-== cmd line json parser ==
-1. | python -m json.tool
-2. | jq .
-
-== trash path ==
-~/.local/share/Trash/files
 
  == base64 == 
 $ echo -n 'scottlinux.com rocks' | base64
@@ -31,7 +15,7 @@ $ echo -n c2NvdHRsaW51eC5jb20gcm9ja3MK | base64 -d
 scottlinux.com rocks
 
  == vim == 
-# macro recording 
+- macro recording 
     qd 	start recording to register d, or any
     ... 	your complex series of commands
     q 	stop recording
@@ -39,7 +23,7 @@ scottlinux.com rocks
     @@ 	execute your macro again 
     #@d to execute number of times
 
-# copy current line to X clipboard type "+yy or to paste from  the X selection type "*p
+- copy current line to X clipboard type "+yy or to paste from  the X selection type "*p
 
  == .ssh/config format for multiple keys == 
 Host ANY_NAME

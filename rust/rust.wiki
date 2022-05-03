@@ -12,6 +12,8 @@
   - This restriction is part of a property of programs called coherence, and more specifically the orphan rule, so named because the parent type is not present.
 - Associated methods do not have self as a parameter. They are used for creating new instance of struct.
 - It isn’t possible to call the default implementation from an overriding implementation of that same method. 
+- array is 'static
+- char type is unicode scalar value
 - If all the fields of your struct are themselves Copy, then you can make the type Copy as well by placing the attribute #[derive(Copy, Clone)] above the definition. 
 - Copy types are very limited in which types they can contain, whereas non-Copy types can use heap allocation and own other sorts of resources. 
   So making a type Copy represents a serious commitment on the part of the implementer: if it’s necessary to change it to non-Copy later, much of the code that uses it will probably need to be adapted.
@@ -268,6 +270,7 @@ let s2 = struct2 {
 - Current orphan rules prevent this, even though it would be completely coherent.
 - Only implement Into trait if a conversion to a type outside the current crate is required. From cannot do these type of conversions because of Rust's orphaning rules. See Into for more details.
 - Prefer using Into trait over using From when specifying trait bounds on a generic function. This way, types that directly implement Into can be used as arguments as well.
+- As a stopgap, trait implementations are statically generated up to size 32.
 - The From trait is also very useful when performing error handling.
 - From<T> for U implies Into<U> for T
 - From is reflexive, which means that From<T> for T is implemented
@@ -620,7 +623,18 @@ let x = 4;
   - [profile.release]
 ----
 
+== str ==
+- a UTF-8 string slice
+- a primitive type
+- typically accessed as immutable references: &str
+ 
+----
 
+== alloc::string::String ==
+- Use the owned String for building and mutating strings.
+- For converting to strings use the format! macro
+- for converting from strings use the FromStr trait
 
+----
 
 - unreachable!(), unimplemented!()
