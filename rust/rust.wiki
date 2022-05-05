@@ -450,28 +450,32 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 - works in single threaded scenario
 ----
 
-== Iterators ==
-- iterators: a way of processing a series of elements
-- iterators produce a series of values
-- iterators are lazy and do nothing unless consumed
-- More calls than its size will always return `None`
+== trait std::iter::Iterator ==
+- iterator: way of processing a series of elements
+  - produce a series of values
+  - lazy and do nothing unless consumed
+- more calls than its size will always return `None`
 - `collect()` on an iterator turns it into a collection
-- has only one item type therefore associtative types are used
+- has only one `Item` type therefore associtative types are used
   - Type checking becomes less complicated
 - Range<type> is an iterator
-- An iterator is any value that implements the std::iter::Iterator trait
-- `size_hint()` returns a tuple where the first element is the lower bound, and the second element is the upper bound.
-  - The second half of the tuple that is returned is an `Option<usize>`
-  - A `None` here means that either there is no known upper bound, or the upper bound is larger than `usize`
-- a value of type `Self` cannot be built from an iterator over elements of type `A`: `std::iter::Iterator<Item={A}>`
-
-- benefit of implementing `IntoIterator` is that your type will work with for loop syntax
+- `size_hint()` returns a tuple
+  - the first element is the lower bound
+  - the second element is the upper bound
+  - the second half of the tuple that is returned is an `Option<usize>`
+  - `None` here means either
+    - no known upper bound
+    - or the upper bound is larger than `usize`
+- a value of type `Self` cannot be built from an iterator
+  - over elements of type `A`: `std::iter::Iterator<Item={A}>`
+- by implementing `IntoIterator` your type will work with for loop syntax
 
 {{{ rust
 trait Iterator{
     type Item; // type of value the iterator produces
     
-    // returns iterator's next value Some(value) or None to indicate end of sequence
+    // returns iterator's next value Some(value) 
+    // or None to indicate end of sequence
     fn next(&mut self) -> Option<Self::Item>;
     
     ..// many default methods
@@ -479,9 +483,9 @@ trait Iterator{
 }}}
 
 - There are three common methods which can create iterators from a collection:
-  - iter(), which iterates over &T
-  - iter_mut(), which iterates over &mut T
-  - into_iter(), which iterates over T
+  - `iter()` iterates over &T
+  - `iter_mut()` iterates over &mut T
+  - `into_iter()` iterates over T
 
 ----
 
