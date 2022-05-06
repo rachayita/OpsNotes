@@ -4,7 +4,6 @@
 - If your program compiles, it is free of data races. All Rust functions are thread-safe.
 - Rust generally uses the u8 type for byte values. For example, reading data from a file or socket yields a stream of u8 values.
 - since the ASCII code for A is 65, the literals b'A' and 65u8 are exactly equivalent. Only  ASCII characters may appear in byte literals.
-- Rust requires array indices to be usize values.
 - blocks are also expressions, which mean they evaluate to a value.
 - assert! terminates the program with a helpful message including the source location of the failing check; this kind of abrupt termination is called a panic.
 - Just like vectors, hash maps store their data on the heap. 
@@ -12,7 +11,6 @@
   - This restriction is part of a property of programs called coherence, and more specifically the orphan rule, so named because the parent type is not present.
 - Associated methods do not have self as a parameter. They are used for creating new instance of struct.
 - It isn’t possible to call the default implementation from an overriding implementation of that same method. 
-- array is 'static
 - char type is unicode scalar value
 - If all the fields of your struct are themselves Copy, then you can make the type Copy as well by placing the attribute #[derive(Copy, Clone)] above the definition. 
 - Copy types are very limited in which types they can contain, whereas non-Copy types can use heap allocation and own other sorts of resources. 
@@ -119,6 +117,14 @@ use std::prelude::v1::*;
 - Rust doesn’t use the term object much, preferring to call everything a value.
 - Only calls through &mut Write incur the overhead of a virtual method call  (Traits).
 - str are compared by their byte values
+----
+
+== array ==
+- Rust requires array indices to be usize values.
+- array is `'static`
+- instead use `Iterator::map` by calling `.iter()` or `.into_iter()` on array as
+  - [T; N]::map is only necessary if needed a new array of same size in result
+  - lazy iterators tend to get optimized very well
 ----
 
 == trait object ==
