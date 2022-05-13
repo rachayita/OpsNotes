@@ -1,10 +1,13 @@
 = Rust =
 == about ==
-- Rust is designed to use ahead-of-time compilation: the translation of your entire program to machine code is completed before it ever begins execution.
-- If your program compiles, it is free of data races. All Rust functions are thread-safe.
-- Rust generally uses the u8 type for byte values. For example, reading data from a file or socket yields a stream of u8 values.
-- since the ASCII code for A is 65, the literals b'A' and 65u8 are exactly equivalent. Only  ASCII characters may appear in byte literals.
-- blocks are also expressions, which mean they evaluate to a value.
+- Rust is designed to use ahead-of-time compilation:
+  - translation of program to machine code is completed before it begins execution
+-  all Rust functions are thread-safe
+  - if program compiles, it is free of data races
+- Rust uses the u8 type for byte values
+  - as reading data from file or socket yields a stream of u8 values
+- Only  ASCII characters may appear in byte literals
+  - since ASCII code for A is 65, literals b'A' and 65u8 are exactly equivalent
 - assert! terminates the program with a helpful message including the source location of the failing check; this kind of abrupt termination is called a panic.
 - Just like vectors, hash maps store their data on the heap. 
 - we can implement a trait on a type only if either the trait or the type is local to our crate.
@@ -68,8 +71,9 @@ let mut v = (136, 139);
 let m = &mut v;
 let m0 = &mut m.0; // ok: reborrowing mutable from mutable
 *m0 = 137;
-let r1 = &m.1;    // ok: reborrowing shared from mutable, and doesn't overlap with m0
-v.1;         // error: access through other paths still forbidden
+// ok: reborrowing shared from mutable, and doesn't overlap with m0
+let r1 = &m.1;
+v.1;          // error: access through other paths still forbidden
 
 int x = 42;      // int variable, not const
 const int *p = &x;  // pointer to const int
@@ -85,14 +89,15 @@ x += 1;       // error: cannot assign to x because it is borrowed
 assert_eq!(*p, 42);  // if you take out the assignment, this is true
 }}}
 
-- When you see expected type `()` in error msg, look for a missing semicolon first.
-- All blocks of an if and match expression must produce values of the same type.
-- Blocks are also expressions, which mean they evaluate to a value
+- when you see expected type `()` in error msg, look for missing semicolon first
+- all blocks of `if` and `match` expression must produce values of same type
+- blocks are also expressions, mean they evaluate to a value
 - `::` operates on namespace
 - `..` can be only used once per tuple pattern
-- `use` directives can be used to "bring in scope" names from other namespace
+- `::<...>` is called turbofish.
+- `use` directives can be used to "bring in scope" names from other namespaces
+  - in use directives, curly brackets are "globs"
 - Using @ lets us test a value and save it in a variable within one pattern
-- The standard collections are all iterable, as are arrays and slices.
 - fn exit(code: i32) -> !
   - The ! means that exit() never returns. It’s a "divergent function".
   - The ! is known as empty type or never type because it has no value
@@ -100,12 +105,10 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
   - `panic!()` has a ! type
   - `loop` has a ! type since the loop never ends
   - expressions of type ! can be coerced into any other type
-
-- The symbol ::<...> is affectionately known in the Rust community as the turbofish.
-- The double-colon, ::, operates on namespaces
-- use directives can be used to "bring in scope" names from other namespace
-- Within use directives, curly brackets have another meaning: they're "globs"
-- A panic is not a crash. It’s not undefined behavior. It’s more like a RuntimeException in Java.
+- panic:
+  - not a crash
+  - not undefined behavior
+  - more like a RuntimeException in Java.
 - Types are namespaces too, and methods can be called as regular functions
 - Rust inserts this at the beginning of every module
 {{{ rust
@@ -113,9 +116,9 @@ use std::prelude::v1::*;
 }}}
 
 - Rust doesn’t have exceptions.
-- ? can only be used in functions that have a Result return type.
-- Rust doesn’t use the term object much, preferring to call everything a value.
-- Only calls through &mut Write incur the overhead of a virtual method call  (Traits).
+- `?` can only be used in functions that have a `Result` return type
+- Rust doesn’t use the term object much, preferring to call everything a value
+- Only calls through `&mut Write` incur overhead of a virtual method call (Traits)
 - str are compared by their byte values
 ----
 
@@ -128,13 +131,17 @@ use std::prelude::v1::*;
 ----
 
 == trait object ==
-- trait object is an opaque value of another type that implements a set of traits. The set of traits is made up of an `object safe` base trait plus any number of auto trait
-- trait object's purpose is to allow abstraction across common behaviour
+- an opaque value of another type that implements a set of traits
+  - the set of traits is made up of:
+    - an "object safe" base trait
+    - plus any number of auto trait
+- its purpose is to allow abstraction across common behaviour
 - we can't add data to a trait object
 - generic method calls are illegal for trait object
-- only one copy is generated for function that takes trait object, resulting in less code bloat at the cost of requiring slower virtual function calls 
-  and effectively inhibiting any chance of inlining and related optimizations from occuring
-- trait object must be object safe because once you have used a trait object, Rust no longer knows the concrete type that's implementing the trait. 
+- only one copy is generated for function that takes trait object, resulting in:
+  - less code bloat at the cost of requiring slower virtual function calls 
+  - inhibiting any chance of inlining and related optimizations from occuring
+- must be object safe because once you have used a trait object, Rust no longer knows the concrete type that's implementing the trait
   If a trait method returns the concrete `Self` type, but a trait object forgets the exact type that Self is, there is no way the method can use the original concrete type
 - Trait objects are the right choice whenever you need a collection of values of mixed types, all together.
 - Possible reason to use trait objects is to reduce the total amount of compiled code. Rust may have to compile a generic function many times, once for each type it’s used with.
@@ -278,7 +285,7 @@ let s2 = struct2 {
 - Prefer using Into trait over using From when specifying trait bounds on a generic function. This way, types that directly implement Into can be used as arguments as well.
 - As a stopgap, trait implementations are statically generated up to size 32.
 - The From trait is also very useful when performing error handling.
-- From<T> for U implies Into<U> for T
+- `From<T>` for U implies `Into<U>` for T
 - From is reflexive, which means that From<T> for T is implemented
 - a fn value is the memory address of the function’s machine code, just like a function pointer in C++.
   - parse() can parse any type that implements the FromStr trait.
@@ -475,6 +482,7 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 - a value of type `Self` cannot be built from an iterator
   - over elements of type `A`: `std::iter::Iterator<Item={A}>`
 - by implementing `IntoIterator` your type will work with for loop syntax
+- std collections are all iterable, as are arrays and slices.
 
 {{{ rust
 trait Iterator{
@@ -647,4 +655,11 @@ let x = 4;
 
 ----
 
+== macro ==
+- macros are expanded into abstract syntax trees, 
+  - rather than string preprocessing
+  - so you don't get unexpected precedence bugs
+- instead of generating a function call, macros are expanded into source code 
+- 
+----
 - unreachable!(), unimplemented!()
