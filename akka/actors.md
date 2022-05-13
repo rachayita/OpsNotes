@@ -1,4 +1,4 @@
-== Actors ==
+# Actors
 
 - Actor programming is reactive programming. Another way to say this is that it’s event-driven programming.
 
@@ -20,7 +20,7 @@
     ~hotswap behavior stack as described in Become/Unbecome
 
 - Life cycle hooks:
-{{{ scala
+``` scala
     //Right after starting the actor, its preStart method is invoked
     def preStart(): Unit = ()
      
@@ -38,7 +38,7 @@
     def postRestart(reason: Throwable): Unit = {
       preStart()
     }
-}}}
+```
 
 - It is important to note that Actors do not stop automatically when no longer referenced, every Actor that is created must also explicitly be destroyed. The only simplification is that stopping a parent Actor will also recursively stop all the child Actors that this parent has created.
 
