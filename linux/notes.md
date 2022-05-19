@@ -58,6 +58,8 @@ EndSection
 - `curl ifconfig.me` get your ip 
 - pacman - get list of packages installed by user>
   > `comm -23 <(pacman -Qqett | sort) <(pacman -Qqg base -g base-devel | sort | uniq)`
+- `xrandr --output eDP-1 --brightness 0.5` adjust brightness
+- `dd if=file.iso of=/dev/sdb bs=512k status=progress` create bootable usb
 
 # 5 sec lag problem with intel gpu
 - https://github.com/qutebrowser/qutebrowser/issues/4641
