@@ -27,8 +27,9 @@ nethoscope broot hmm
 - [powerline-rs](https://github.com/jD91mZM2/powerline-rs.git)
 
 # font
-- JetBrainsMono
+- JetBrains Mono
 - Bizcat:  an 8x16 bitmap font
+- fonts with starship
 
 # firewall
 - ufw/gufw
