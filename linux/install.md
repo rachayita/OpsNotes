@@ -7,29 +7,28 @@
 - https://github.com/zsh-users/zsh-syntax-highlighting.git
 - https://github.com/cirala/vifmimg fir vifm image preview
 
-# AUR
-- https://aur.archlinux.org/simple-mtpfs-git.git
-- https://aur.archlinux.org/obinskit.git
-- https://aur.archlinux.org/brother-mfc-l2700dw.git    https://aur.archlinux.org/packages/brother-mfc-l2700dw/
-
 # pacman
-riggrep fd base-devel git meld vim firefox mpv w3m lsd vifm youtube-dl feh stow
+riggrep fd base-devel git meld neovim firefox mpv w3m vifm youtube-dl feh stow
 alacritty chromium vscodium sxiv gdb vimb ueberzug byobu ytfzf xclip lynx 
-neomutt
+neomutt font-manager lxappearance cups nc zathura(with poppler)
 
 # paru
 - stint: cmd line color picker
 - mutt-wizard-git
-
+- simple-mtpfs-git
+- obinskit
+- brother-mfc-l2700dw
+- 
 # cargo
-powerline-rs du-dust riggrep racer skim starship lsd bat  diskonaut paru
-nethoscope broot hmm
+powerline-rs du-dust riggrep racer skim starship exa bat  diskonaut paru
+nethoscope broot hmm shotgun
 - [powerline-rs](https://github.com/jD91mZM2/powerline-rs.git)
 
 # font
 - JetBrains Mono
 - Bizcat:  an 8x16 bitmap font
-- fonts with starship
+- iosevka nerd font: fonts for starship
+- Font Awesome
 
 # firewall
 - ufw/gufw
@@ -54,3 +53,4 @@ nethoscope broot hmm
 - dunst: light weight notification daemon
 - [vim todo plugin](https://github.com/dewyze/vim-tada)
 - gitsjournal
+- qemu, obsidian

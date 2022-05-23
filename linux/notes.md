@@ -60,6 +60,7 @@ EndSection
   > `comm -23 <(pacman -Qqett | sort) <(pacman -Qqg base -g base-devel | sort | uniq)`
 - `xrandr --output eDP-1 --brightness 0.5` adjust brightness
 - `dd if=file.iso of=/dev/sdb bs=512k status=progress` create bootable usb
+- `gtk-update-icon-cache -f -t ~/.icons/<theme_name>` run to update the icon cache
 
 # 5 sec lag problem with intel gpu
 - https://github.com/qutebrowser/qutebrowser/issues/4641

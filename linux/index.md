@@ -1,2 +1,2 @@
-[notes](notes)
-[install](install)
+* [notes](notes)
+* [install](install)
