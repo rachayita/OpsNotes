@@ -10,7 +10,7 @@
 # pacman
 riggrep fd base-devel git meld neovim firefox mpv w3m vifm youtube-dl feh stow
 alacritty chromium vscodium sxiv gdb vimb ueberzug byobu ytfzf xclip lynx 
-neomutt font-manager lxappearance cups nc zathura(with poppler)
+neomutt font-manager lxappearance cups nc zathura(with poppler) unzip
 
 # paru
 - stint: cmd line color picker
@@ -21,7 +21,7 @@ neomutt font-manager lxappearance cups nc zathura(with poppler)
 - 
 # cargo
 powerline-rs du-dust riggrep racer skim starship exa bat  diskonaut paru
-nethoscope broot hmm shotgun
+nethoscope broot hmm shotgun tig
 - [powerline-rs](https://github.com/jD91mZM2/powerline-rs.git)
 
 # font

@@ -599,10 +599,60 @@ let x = 4;
 - For converting to strings use the format! macro
 - for converting from strings use the FromStr trait
 
-# macro 
-- macros are expanded into abstract syntax trees, 
+# macro
+- generic syntax extension form
+- macros are expanded into abstract syntax trees,
   - rather than string preprocessing
   - so you don't get unexpected precedence bugs
-- instead of generating a function call, macros are expanded into source code 
+- instead of generating a function call, macros are expanded into source code
+- general mechanism macros are built on is "syntax extensions"
+- first stage of compilation for a Rust program is tokenization
+  - `self` is both an identifier and keyword
+  - rustc_lexer emits single character symbols as tokens
+  - rustc_parse emits multi character symbols as tokens
+- second is parsing: stream of tokens is turned into Abstract syntax Tree(AST)
+- 4 syntax extension form:
+```rust
+1.  # [ $arg ]; e.g. #[derive(Clone)], #[no_mangle], …
+2.  # ! [ $arg ]; e.g. #![allow(dead_code)], #![crate_name="blang"], …
+3.  $name ! $arg; e.g. println!("Hi!"), concat!("a", "b"), …
+4.  $name ! $arg0 $arg1; e.g. macro_rules! dummy { () => {}; }
+```
+  - 1 n 2 are attributes which annotates items, expressions and statements
+    - classified into 3:
+      - **built-in attributes**: implemented by compiler
+      - **proc-macro attributes**: implemented by procedural macros
+      - **dervie attributes**: implemented by procedural macros
+  - 3 are function like macros
+      - use with `macro-rules!`, `macro` and procedural macros
+      - a generic syntax extension form
+      - the arg is single non leaf token tree
+  - 4 is variation not available to macros, used with `macro-rules!`
+- syntax extensions are parsed as part of AST and
 
-- unreachable!(), unimplemented!()
+| can appear in:             | not in        |
+|----------------------------|---------------|
+| patterns                   | identifiers   |
+| statements                 | match arms    |
+| expressions                | struct fields |
+| items(includes impl items) |               |
+| Types                      |               |
+
+- expansion of all syntax extensions:
+  - after construction of the AST
+  - but before compiler begins constructing semantic understanding of program
+  - expansion involves:
+    - traversing the AST
+    - locating syntax extension invocations
+    - finally replacing them with their expansion
+    - syntax extension recursion limit defaults to 128
+    - limit can be raised by `#![recursion_limit="…"]` attribute crate-wide
+
+
+
+
+
+
+
+
+# unreachable!(), unimplemented!()
