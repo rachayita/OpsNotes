@@ -100,13 +100,6 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - `use` directives can be used to "bring in scope" names from other namespaces
   - in use directives, curly brackets are "globs"
 - Using @ lets us test a value and save it in a variable within one pattern
-- fn exit(code: i32) -> !
-  - The ! means that exit() never returns. It’s a "divergent function".
-  - The ! is known as empty type or never type because it has no value
-  - `continue` has a ! type
-  - `panic!()` has a ! type
-  - `loop` has a ! type since the loop never ends
-  - expressions of type ! can be coerced into any other type
 - panic:
   - not a crash
   - not undefined behavior
@@ -122,6 +115,33 @@ use std::prelude::v1::*;
 - Rust doesn’t use the term object much, preferring to call everything a value
 - Only calls through `&mut Write` incur overhead of a virtual method call (Traits)
 - str are compared by their byte values
+
+# `!` never type
+- ! is empty type or never type because it has no value
+- expressions that don’t finish normally are assigned the special type !
+  - they’re exempt from the rules about types having to match
+- expressions of type ! can be coerced into any other type
+- fn exit(code: i32) -> !
+    The ! means that exit() never returns. It’s a divergent function.
+- `fn exit(code: i32) -> !`
+  - ! means that exit() never returns
+  - it’s a "divergent function"
+- `continue` has a ! type
+- `panic!()` has a ! type
+- `loop` has a ! type since the loop never ends
+- when `!` is stabilized, plan is to make `Infallible` a type alias to it
+
+```rust
+pub type Infallible = !;
+```
+
+- there is one case where `!` syntax can be used before `!` is stabilized
+  - in the position of a function’s return type
+
+```rust
+trait MyTrait {}
+impl MyTrait for fn() -> ! {}
+```
 
 # array 
 - Rust requires array indices to be usize values.
@@ -197,11 +217,6 @@ let s2 = struct2 {
 - You can “borrow a reference” to a value; references are nonowning pointers, with limited lifetimes.
 - Like C and C++, Rust puts plain string literals like "udon" in read-only memory, so for a clearer comparison with the C++ and Python examples, we call to_string here to get heap-allocated String values.
 - Rust tries to choose the smallest lifetime that works.
-
-- Loops are expressions in Rust, but they don’t produce useful values. The value of a loop is ().
-- Expressions that don’t finish normally are assigned the special type !, and they’re exempt from the rules about types having to match.
-- fn exit(code: i32) -> !
-    The ! means that exit() never returns. It’s a divergent function.
 - The value to the left of the dot or brackets[] is automatically dereferenced.
 - Expressions like these three are called lvalues, because they can appear on the left side of an assignment:
     game.black_pawns // struct field
@@ -209,13 +224,14 @@ let s2 = struct2 {
     pieces[i] // array element
 -  Each crate is a Rust project
 
-# cargo 
-- Invoke the cargo run command from any directory in the package to build and run our program
-- Cargo places the executable in the target subdirectory at the top of the package
-- what crates are and how they work together is to use cargo build with the --verbose flag
-- when compiling libraries, cargo uses the `--crate-type lib` option which tells rustc not to look for main() but instead produce an .rlib file.
+# cargo
+- when compiling libraries, cargo uses `--crate-type lib` option
+  - which tells rustc not to look for main() but instead produce an .rlib file
 - `cargo build --release` produces optimized build
-- release builds run faster, but takes longer to compile, they don't check for integer overflow, skip debug_assert!() assertions, and stack traces the generate are less reliable
+- release builds run faster, but takes longer to compile
+  - they don't check for integer overflow
+  - skip `debug_assert!()`
+  - stack traces they generate are less reliable
 
 | command line          | cargo.toml section |
 | ----                  | ----               |
@@ -224,14 +240,68 @@ let s2 = struct2 {
 | cargo test            | [profile.test]     |
 |                       |                    |
 
-  [profile.release]
-  debug = true  #enable debug symbols in release builds
-
-  the debug setting controls -g option to rustc
-
+``` toml
+[profile.release]
+debug = true  #enable debug symbols in release builds
+```
+- the debug setting controls -g option to rustc
 - `cargo test math` runs all tests that contain math somewhere in their name
-- cargo test - to run all test
-- cargo test --doc to only run documentation test
+- `cargo test` - to run all test
+- `cargo test --doc` to only run documentation test
+- add a `rust-toolchain.toml` file in that project with:
+
+``` toml
+[toolchain]
+channel = "nightly"
+```
+  - or `rustup override set nightly` command for particular project dir
+-
+``` Cargo.toml
+[package]
+name = "fun_game" # for crate
+version = "0.1.0"
+edition = "2022"
+description = "A fun game where you guess what number the computer has chosen."
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+add_one = { path = "../crate1" }
+```
+
+- at workspace level
+  - has only one `Cargo.lock` file for whole project rather than having in each crate dir
+  - donot have a `[package]` section in Cargo.toml
+``` Cargo.toml
+[workspace]
+members = [
+    "crate1",
+    "crate2",
+    "fun_game",
+]
+```
+- workspace structure
+```
+├── Cargo.lock
+├── Cargo.toml
+├── crate1
+│   ├── Cargo.toml
+│   └── src
+│       └── lib.rs
+├── crate2
+│   ├── Cargo.toml
+│   └── src
+│       └── main.rs
+└── target
+```
+
+# doc
+- `cargo doc` to build documentation in target/doc
+- `cargo doc --open` creates and open doc
+- `cargo test --doc` to only run documentation test
+- `///` generate library doc for following item
+- `//!` generate library doc for enclosing item
+- `src/lib.rs` file is crate root
+
 
 - Modules are Rust’s namespaces. They’re containers for the functions, types, constants, and so on that make up your Rust program or library. Whereas crates are about code sharing between projects, modules are about code organization within a project.
 - rust never compiles its modules separately, even if they are in separate files: when you build a rust crate, you are recompiling all of its modules.  
@@ -335,6 +405,20 @@ The third rule is if there are multiple input lifetime parameters, but one of th
   - all string literals have the `'static` lifetime  
   - let s: &'static str = "I have a static lifetime.";  
     - text of string is stored directly in the program’s binary, which is always available
+
+# const fn
+- it is a function that one is permitted to call from a const or static context
+- it only restricts the types that arguments and the return type may use
+- prevent various expressions from being used within it
+- functions and inherent methods can be marked as const
+- traits, trait impls and their methods cannot be const
+- only simple by-value bindings are allowed in arguments
+- by-ref bindings and destructuring can be supported
+  - but they're not necessary and only complicate the implementation
+- can use generic type and lifetime parameters
+- complex floating point operationsa might get slightly different results
+- floating point values are treated just like generic parameters
+  - without trait bounds beyond `Copy`
 
 # unsafe 
 - unsafe superpower includes:
@@ -462,17 +546,11 @@ trait Iterator{
   - `iter_mut()` iterates over &mut T
   - `into_iter()` iterates over T
 
-# doc 
-- `cargo doc` - to build documentation in target/doc
-- `cargo test --doc` - to only run documentation test  
-- /// generate library doc for following item
-- //! generate library doc for enclosing item
-
-
 # closure 
 - closures: anonymous function-like construct you can store in a variable
-- it borrows: when rust creates a closure, it can automatically borrow a ref to a captured variable
-  - it stands to reason: the closure refers to a captured variable, so it must have a ref to it
+- it borrows:
+  - when rust creates a closure, it can automatically borrow a ref to a captured variable
+  - closure refers to a captured variable, so it must have a ref to it
 - types are locked into the closure in first use
   - we get a type error if we try to use a different type with the same closure
 - rust offers two ways for closure to get data from enclosing scopes:
@@ -485,13 +563,14 @@ trait Iterator{
   - Fn(&City) -> bool // Fn trait (both functions and closures)
     - this trait is automatically implemented by all the functions and closures
   - closure is callable but its not a fn
-- a function value is the memory address of the function's machine code, just like function pointer in c++
+- function value is memory address of its machine code, just like function pointer in c++
 - faster and safer than function pointers
 - fast enough that can be used in performace sensitive code
 - aren't allocated on heap unless you put them in Box, Vec, or other container
-- whenever compiler knows the type of closure you are calling, it can inline the code for that closure
-  - this makes it ok to use closures in tight loops
-  - often the compiler can inline all calls to a closure
+- whenever compiler knows the type of closure you are calling
+  - it can inline the code for that closure
+    - this makes it ok to use closures in tight loops
+    - often the compiler can inline all calls to a closure
 
 ``` rust
 // Pseudocode for `Fn`, `FnMut` and `FnOnce` traits with no arguments.
@@ -512,20 +591,25 @@ trait FnOnce() -> R {
 
 ( Fn ) FnMut ) FnOnce )
 - Fn is subtrait of FnMut, which is a subtrait of FnOnce
-- Every Fn meets the requirements for FnMut, and every FnMut meets the requirements for FnOnce
-- Fn is the family of closures and functions that you can call multiple times without restriction 
-  - This highest category also includes all fn functions
+- every Fn meets the requirements for FnMut
+- every FnMut meets the requirements for FnOnce
+- Fn is the family of closures
+  - functions that you can call multiple times without restriction
+  - this highest category also includes all fn functions
   - closure that drop values, are not allowed to have Fn
-- FnMut: trait of closures that requires mut access to a value, but doesn’t drop any values
+- FnMut: trait of closures that requires mut access to a value
+  - but doesn’t drop any values
   - can be called multiple times if the closure itself is declared mut
 - FnOnce: trait of closures that can be called once 
 
 - every closure has its own type
-  - so every closure has an adhoc type created by the compiler, large enough to hold that data
+  - so every closure has an adhoc type created by the compiler
+    - large enough to hold that data
   - no two closures, even if identical, have the same type
   - need to use boxes and trait objects for more than one type of closure as parameter
-    - not safe to store closure if it contains borrowed references to variables that are about to go out of scope
-      - therefore 'static lifetime is added
+    - not safe to store closure if 
+      - it contains borrowed references to variables that are about to go out of scope
+        - therefore 'static lifetime is added
   - code that works  with closures usually needs to be generic
   
 # variance 
@@ -543,11 +627,12 @@ let x = 4;
 ```
 
 - if let and while let are both refultable and irrefutable
-- Rust complains with warning if it doesn’t make sense to use if let with an irrefutable pattern
+- gives warning if it doesn’t make sense to use if let with an irrefutable pattern
   - ex: if let x = 5 { ... };
 
-# test 
+# test
 - `cargo test -- --nocapture` to enable print statement
+- start test names with “should”
 
 # std::marker::PhantomData<T> and Zero Sized Type 
 - where T: ?Sized
@@ -647,12 +732,31 @@ let x = 4;
     - finally replacing them with their expansion
     - syntax extension recursion limit defaults to 128
     - limit can be raised by `#![recursion_limit="…"]` attribute crate-wide
+- **Hygiene**: ability for a macro to work in its own syntax context:
+  - not affecting nor affected by the surroundings
+  - syntax extension should be invocable without interfering with its surroundig context
+  - affects identifiers and paths emitted by syntax extensions
+  - identifier created by syntax extension should not be accessed by environment
+  - identifire used in syntax extension should not reference outside of it
+- `create` and `use` refer to the position the identifier is in ie:
+``` rust
+// introduce something new under the name therefore hygiene
+  - Foo in struct Foo {} or the foo in let foo = …;
+
+// referring to something existing therefore not hyginen
+  - but Foo in fn foo(_: Foo) {} or foo in foo + 3
+```
+- **Debugging**:
+  - expand code via the unstable `rustc +nightly -Zunpretty=expanded hello.rs`
+  - expand code via `cargo expand` by installing **cargo-expand** crate
+- `macro_rules!`:
+  - technically not part of rust syntax
+  - `($matcher) => {$expansion};` for each rule
+  - any type of paranthesis can be used
+  - expansion part of rule is called its _transcriber_
 
 
-
-
-
-
-
+# miscellaneous
+- reflexive, means `Into<T> for T` is implemented
 
 # unreachable!(), unimplemented!()

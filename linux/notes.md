@@ -184,3 +184,6 @@ HostName HOST or IP
 User USER_NAME
 IdentityFile "PATH TO id_rsa FILE"
 ```
+# change pinentry permanently
+- append the following to your ~/.gnupg/gpg-agent.conf:
+`pinentry-program /usr/bin/pinentry-tty`

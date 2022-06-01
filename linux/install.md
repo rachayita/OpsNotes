@@ -10,7 +10,10 @@
 # pacman
 riggrep fd base-devel git meld neovim firefox mpv w3m vifm youtube-dl feh stow
 alacritty chromium vscodium sxiv gdb vimb ueberzug byobu ytfzf xclip lynx 
-neomutt font-manager lxappearance cups nc zathura(with poppler) unzip
+neomutt font-manager lxappearance cups nc zathura(with poppler) unzip powertop 
+shotgun tig pass pass-otp zbar syncthing
+
+- lapce: rust based code editor
 
 # paru
 - stint: cmd line color picker
@@ -21,7 +24,7 @@ neomutt font-manager lxappearance cups nc zathura(with poppler) unzip
 - 
 # cargo
 powerline-rs du-dust riggrep racer skim starship exa bat  diskonaut paru
-nethoscope broot hmm shotgun tig
+nethoscope broot hmm 
 - [powerline-rs](https://github.com/jD91mZM2/powerline-rs.git)
 
 # font
@@ -52,5 +55,4 @@ nethoscope broot hmm shotgun tig
 - [cast yt to smart tv](https://github.com/MarcoLucidi01/ytcast)    
 - dunst: light weight notification daemon
 - [vim todo plugin](https://github.com/dewyze/vim-tada)
-- gitsjournal
 - qemu, obsidian
