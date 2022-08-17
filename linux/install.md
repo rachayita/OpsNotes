@@ -8,8 +8,8 @@
 - https://github.com/cirala/vifmimg fir vifm image preview
 
 # pacman
-riggrep fd base-devel git meld neovim firefox mpv w3m vifm youtube-dl feh stow
-alacritty chromium vscodium sxiv gdb vimb ueberzug byobu ytfzf xclip lynx 
+fd base-devel git meld neovim firefox mpv w3m vifm youtube-dl feh stow
+alacritty chromium vscodium sxiv gdb vimb ueberzug ytfzf xclip lynx 
 neomutt font-manager lxappearance cups nc zathura(with poppler) unzip powertop 
 shotgun tig pass pass-otp zbar syncthing
 
@@ -21,10 +21,10 @@ shotgun tig pass pass-otp zbar syncthing
 - simple-mtpfs-git
 - obinskit
 - brother-mfc-l2700dw
-- 
+
 # cargo
-powerline-rs du-dust riggrep racer skim starship exa bat  diskonaut paru
-nethoscope broot hmm 
+powerline-rs du-dust racer skim starship exa bat  diskonaut paru
+nethoscope broot hmm fd-find
 - [powerline-rs](https://github.com/jD91mZM2/powerline-rs.git)
 
 # font

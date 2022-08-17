@@ -302,6 +302,8 @@ members = [
 - `//!` generate library doc for enclosing item
 - `src/lib.rs` file is crate root
 
+# rustup
+- `rustup override set nightly`
 
 - Modules are Rust’s namespaces. They’re containers for the functions, types, constants, and so on that make up your Rust program or library. Whereas crates are about code sharing between projects, modules are about code organization within a project.
 - rust never compiles its modules separately, even if they are in separate files: when you build a rust crate, you are recompiling all of its modules.  
@@ -644,6 +646,19 @@ let x = 4;
   - like PhantomData<&'a T> (ideally) or PhantomData<*const T> (if no lifetime applies)
   - so as not to indicate ownership 
 - phantom type parameter: is simply a type parameter which is never used
+
+# std::marker::Send
+- ownership of values of the type implementing `Send` can be transferred between threads
+- Almost every rust type id `Send`
+  - except `Rc<T>`
+- types composed entirely of types that are `Send` are also `Send`
+
+# std::marker::Sync
+- it is safe for type implementing `Sync` to be referenced from multiple threads
+- any type T is `Sync` if &T is `Send`
+  - means the reference can be sent safely to another thread
+- types composed entirely of types that are `Sync` are also `Sync`
+- `RefCell<T>`, the family of related `Cell<T>` types are not `Sync`
 
 # std::ptr 
 - a null pointer is never valid, not even for accesses of size zero
