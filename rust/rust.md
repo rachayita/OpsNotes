@@ -1,122 +1,61 @@
 # Rust
-# about 
-- Rust is designed to use ahead-of-time compilation:
+## about
+- rust is designed to use ahead-of-time compilation:
   - translation of program to machine code is completed before it begins execution
 -  all Rust functions are thread-safe
   - if program compiles, it is free of data races
-- Rust uses the u8 type for byte values
+- rust uses the u8 type for byte values
   - as reading data from file or socket yields a stream of u8 values
-- Only  ASCII characters may appear in byte literals
+- only  ASCII characters may appear in byte literals
   - since ASCII code for A is 65, literals b'A' and 65u8 are exactly equivalent
-- assert! terminates the program with a helpful message including the source location of the failing check; this kind of abrupt termination is called a panic.
-- Just like vectors, hash maps store their data on the heap. 
-- we can implement a trait on a type only if either the trait or the type is local to our crate.
-  - This restriction is part of a property of programs called coherence, and more specifically the orphan rule, so named because the parent type is not present.
-- Associated methods do not have self as a parameter. They are used for creating new instance of struct.
-- It isn’t possible to call the default implementation from an overriding implementation of that same method. 
+- `assert!` terminates program with a helpful message
+  - including the source location of the failing check
+  - this kind of abrupt termination is called a panic
+- just like vectors, hash maps store their data on the heap
+- can implement a trait on a type only if either the trait or the type is local to our crate
+  - This restriction is part of a property of programs called coherence
+    - more specifically the orphan rule, so named because the parent type is not present
+- "associated methods" do not have self as a parameter
+  - they are used for creating new instance of struct
+- not possible to call default implementation from an overriding implementation of that same method
 - char type is unicode scalar value
-- Rust doesn’t have reflection capabilities,
+- rust doesn’t have reflection capabilities
   - so it can’t look up the type’s name at runtime
-- If all the fields of your struct are themselves Copy, then you can make the type Copy as well by placing the attribute #[derive(Copy, Clone)] above the definition. 
-- Copy types are very limited in which types they can contain, whereas non-Copy types can use heap allocation and own other sorts of resources. 
-  So making a type Copy represents a serious commitment on the part of the implementer: if it’s necessary to change it to non-Copy later, much of the code that uses it will probably need to be adapted.
-- indirection means that instead of storing a value directly, we will change the datastrucuture to store the value indirectly by storing a pointer to the value instead
-- The Rc and Arc types are very similar; 
-  the only difference between them is that an Arc is safe to share between threads directly—the name Arc is short for atomic reference count
-  —whereas a plain Rc uses faster non- thread-safe code to update its reference count.
-- You can think of the distinction between shared and mutable references as a way to enforce a multiple readers or single writer rule at compile time.
-- As long as there are shared references to a value, not even its owner can modify it; the value is locked down.
--  If you actually want to know whether two references point to the same memory, you can use std::ptr::eq, which compares them as addresses:
+- If all the fields of struct are themselves `Copy`
+  - then make the type `Copy` by placing the attribute `#[derive(Copy, Clone)]` above the definition
+- Copy types are very limited in which types they can contain
+- whereas non-Copy types can use heap allocation and own other sorts of resources
+- So making a type Copy represents a serious commitment on the part of the implementer:
+  - if it’s necessary to change it to non-Copy later,
+    - much of the code that uses it will probably need to be adapted
+- indirection:
+  - instead of storing a value directly, change the datastrucuture to store the value indirectly by storing a pointer to the value instead
+- The Rc and Arc types are very similar
+  - the only difference between them is that an Arc is safe to share between threads directly
+  - the name Arc is short for atomic reference count
+  - plain Rc uses faster non- thread-safe code to update its reference count
+- the distinction between shared and mutable references
+  - as a way to enforce a multiple readers or single writer rule at compile time
+- as long as there are shared references to a value, not even its owner can modify it
+  - the value is locked down
+-  want to know whether two references point to the same memory
+  - use `std::ptr::eq`, which compares them as addresses:
    ``` rust
      assert!(rx == ry);         // their referents are equal
      assert!(!std::ptr::eq(rx, ry)); // but occupy different addresses
    ```
-			
-- References are never null.
-- Rust tries to assign each reference type in your program a lifetime.
-- At runtime, a reference is nothing but an address; its lifetime is part of its type and has no runtime representation.
-- When a function takes a single reference as an argument, and returns a single reference, Rust assumes that the two must have the same lifetime.
-- Function argument and return value must have the same lifetime.
-- if your function doesn’t return any references, then you never need to write out lifetimes for your parameters. Rust just assigns a distinct lifetime to each spot that needs one.
-- borrowing rules:
-  - at any given time, you can have either (but not both of) one mutable reference or any number of immutable reference
-- references must always be valid
-- No lifetime annotation required when self is a parameter.
-- Throughout its lifetime, a shared reference makes its referent read-only: you may not assign to the referent or move its value elsewhere.
-- Shared access is read-only access. Values borrowed by shared references are read-only. 
-  Across the lifetime of a shared reference, neither its referent, nor anything reachable from that referent, can be changed by anything. 
-		There exist no live mutablereferences to anything in that structure; its owner is held read- only; and so on. It’s really frozen.
-- Mutable access is exclusive access. A value borrowed by a mutable reference is reachable exclusively via that reference.  
-  Across the lifetime of a mutable reference, there is no other usable path to its referent, or to any value reachable from there.  
-		The only references whose lifetimes may overlap with a mutable reference are those you borrow from the mutable reference itself.
 
-``` rust
-let mut x = 10;
-let r1 = &x;
-let r2 = &x;     // ok: multiple shared borrows permitted
-x += 10;       // error: cannot assign to `x` because it is borrowed
-let m = &mut x;    // error: cannot borrow `x` as mutable because it is
-// also borrowed as immutable
-let mut y = 20;
-let m1 = &mut y;
-let m2 = &mut y;  // error: cannot borrow as mutable more than once
-let z = y;      // error: cannot use `y` because it was mutably borrowed
-
-// It is OK to reborrow a shared reference from a shared reference:
-let mut w = (107, 109);
-let r = &w;
-let r0 = &r.0;    // ok: reborrowing shared as shared
-let m1 = &mut r.1; // error: can't reborrow shared as mutable
-
-// You can reborrow from a mutable reference:
-let mut v = (136, 139);
-let m = &mut v;
-let m0 = &mut m.0; // ok: reborrowing mutable from mutable
-*m0 = 137;
-// ok: reborrowing shared from mutable, and doesn't overlap with m0
-let r1 = &m.1;
-v.1;          // error: access through other paths still forbidden
-
-int x = 42;      // int variable, not const
-const int *p = &x;  // pointer to const int
-assert(*p == 42);
-x++;         // change variable directly
-assert(*p == 43);  // “constant” referent's value has changed
-
-
-let mut x = 42;    // nonconst i32 variable
-let p = &x;      // shared reference to i32
-assert_eq!(*p, 42);
-x += 1;       // error: cannot assign to x because it is borrowed
-assert_eq!(*p, 42);  // if you take out the assignment, this is true
-```
-
-- when you see expected type `()` in error msg, look for missing semicolon first
-- all blocks of `if` and `match` expression must produce values of same type
-- blocks are also expressions, mean they evaluate to a value
-- `::` operates on namespace
-- `..` can be only used once per tuple pattern
-- `::<...>` is called turbofish.
-- `use` directives can be used to "bring in scope" names from other namespaces
-  - in use directives, curly brackets are "globs"
-- Using @ lets us test a value and save it in a variable within one pattern
-- panic:
-  - not a crash
-  - not undefined behavior
-  - more like a RuntimeException in Java.
-- Types are namespaces too, and methods can be called as regular functions
-- Rust inserts this at the beginning of every module
-``` rust
-use std::prelude::v1::*;
-```
-
-- Rust doesn’t have exceptions.
+- Rust doesn’t have exceptions
 - `?` can only be used in functions that have a `Result` return type
 - Rust doesn’t use the term object much, preferring to call everything a value
 - Only calls through `&mut Write` incur overhead of a virtual method call (Traits)
 - str are compared by their byte values
 
-# `!` never type
+- `{}` is Display format specifier, works for things that has Display trait
+- `{:?}` is Debug format specifier works for things that has Debug trait
+- `{:#?}` for pretty-print
+
+## `!` never type
 - ! is empty type or never type because it has no value
 - expressions that don’t finish normally are assigned the special type !
   - they’re exempt from the rules about types having to match
@@ -143,14 +82,22 @@ trait MyTrait {}
 impl MyTrait for fn() -> ! {}
 ```
 
-# array 
+## memory model
+- when a value is assigned to a variable, that value is from then on named by that variable
+- when a variable is later accessed
+  - imagine drawing a line from the previous access to the new access (called 'flows')
+    - which establishes a dependency relationship between the two accesses
+- a variable exists only so long as it holds a legal value
+- you cannot draw lines from a variable whose value is uninitialized or has been moved
+
+## array
 - Rust requires array indices to be usize values.
 - array is `'static`
 - instead use `Iterator::map` by calling `.iter()` or `.into_iter()` on array as
   - [T; N]::map is only necessary if needed a new array of same size in result
   - lazy iterators tend to get optimized very well
 
-# trait object 
+## trait object
 - an opaque value of another type that implements a set of traits
   - the set of traits is made up of:
     - an "object safe" base trait
@@ -159,53 +106,73 @@ impl MyTrait for fn() -> ! {}
 - we can't add data to a trait object
 - generic method calls are illegal for trait object
 - only one copy is generated for function that takes trait object, resulting in:
-  - less code bloat at the cost of requiring slower virtual function calls 
+  - less code bloat at the cost of requiring slower virtual function calls
   - inhibiting any chance of inlining and related optimizations from occuring
-- must be object safe because once you have used a trait object, Rust no longer knows the concrete type that's implementing the trait
-  If a trait method returns the concrete `Self` type, but a trait object forgets the exact type that Self is, there is no way the method can use the original concrete type
-- Trait objects are the right choice whenever you need a collection of values of mixed types, all together.
-- Possible reason to use trait objects is to reduce the total amount of compiled code. Rust may have to compile a generic function many times, once for each type it’s used with.
-- generics have two important advantages over trait objects: 
-    1. Speed:  Rust can evaluate it at compile time, so that there’s no runtime cost at all.
-    2. not every trait can support trait objects.
-
-- Rust never knows what type of value a trait object points to until run time. So even if you pass a Sink, the overhead of calling virtual methods and checking for errors still applies. 
-  The second advantage of generics is that not every trait can support trait objects. 
-		Traits support several features, such as static methods, that work only with generics: they rule out trait objects entirely.
-
-- A trait that uses the Self type is incompatible with trait objects
+- must be object safe because once you have used a trait object
+  - rust no longer knows the concrete type that's implementing the trait
+- if a trait method returns the concrete `Self` type
+  - but a trait object forgets the exact type that `Self` is
+    - there is no way the method can use the original concrete type
+- trait objects are right choice whenever needed a collection of values of mixed types, all together
+- Possible reason to use trait objects is to reduce the total amount of compiled code
+  - rust may have to compile a generic function many times, once for each type it’s used with
+- generics have two important advantages over trait objects:
+    1. speed: rust can evaluate it at compile time, so that there’s no runtime cost at all
+    2. not every trait can support trait objects
+- rust never knows what type of value a trait object points to until run time
+  - so even if you pass a Sink, overhead of calling virtual methods and checking for errors still applies
+- second advantage of generics is that not every trait can support trait objects
+  - traits support several features, such as static methods
+    - that work only with generics: they rule out trait objects entirely
+- A trait that uses the `Self` type is incompatible with trait objects
 - with trait objects, you lose the type information Rust needs to type-check your program
-- a trait object points to both an instance of a type implementing our specified trait as well as a table used to lookup trait methods on that type at runtime
-- we create a trait object by specifying some sort of pointer, such as & reference or Box<T> smart poiner, then the dyn keyword, and then specifying the relevent trait
-- Rust doesn't have inheritance but bounds
-- `Trait: Sized` states that the trait itself can only be implemented for a type that already implements `Sized`
-- `fn method(&self) where Self: Sized` states that only types that implements `Sized` can implement this method
-- `dyn` is a prefix of a trait object's type. It is used to highlight that calls to methods on the associated Trait are dynamically dispatched. To use the trait this way, it must be 'object safe'
-- Unlike generic parameters or `impl Trait`, the compiler doesnot know the concrete type that is being passed. That is, the type has been erased. As such, a `dyn Trait` reference contains two pointers. One pointer goes to the data(eg. an instance of a struct). Another poiner goes to a map of method call names to a function pointers (known as virtual method table or vtable). At runtime, when a method needs to be called on the `dyn Trait`, the vtable is consulted to get the function pointer and then that function pointer is called. It has additional runtime cost. Also, method cannot be inlined by compiler.
+- a trait object points to both
+  - an instance of a type implementing our specified trait 
+  - as well as a table used to lookup trait methods on that type at runtime
+- we create a trait object by specifying some sort of pointer
+  - such as & reference or Box<T> smart poiner
+  - then the `dyn` keyword, and then specifying the relevent trait
+- rust doesn't have inheritance but bounds
+- `Trait: Sized`: trait itself can only be implemented for a type that already implements `Sized`
+- `fn method(&self) where Self: Sized`:  only types that implements `Sized` can implement this method
+- `dyn` is a prefix of a trait object's type
+  - used to highlight that calls to methods on the associated trait are dynamically dispatched
+  - to use the trait this way, it must be 'object safe'
+- unlike generic parameters or `impl Trait`, the compiler doesnot know the concrete type that is being passed
+  - that is, the type has been erased
+- `dyn Trait` reference contains two pointers
+  - one pointer goes to the data(eg. an instance of a struct)
+  - another poiner goes to a map of method call names to a function pointers 
+    - known as virtual method table or vtable
+  - at runtime, when a method needs to be called on the `dyn Trait`
+    - the vtable is consulted to get the function pointer 
+    - and then that function pointer is called
+    - it has additional runtime cost
+    - also, method cannot be inlined by compiler.
+- `dyn Trait` produce smaller code than `impl Trait` / generic parameters 
+  - as the method won't be duplicated for each concrete type
 
-- `dyn Trait` produce smaller code than `impl Trait` / generic parameters as the method won't be duplicated for each concrete type
-
-# struct 
-``` rust 
-// This is called "struct update syntax", can only happen in last position, and cannot be followed by a comma
+## struct
+``` rust
+// This is called "struct update syntax",
+//can only happen in last position, and cannot be followed by a comma
 let s2 = struct2 {
     x: 14.0,
     ..struct2
 };
 ```
 
-# object safety 
-- a trait object can only be constructed out of traits that satisfy certain restrictions, which are collectively called 'object safety'
-
-- Object safe traits can be the base trait of a trait object. A trait is object safe if it has the following qualities (defined in RFC 255):
-
+## object safety
+- a trait object can only be constructed out of traits that satisfy certain restrictions
+  - which are collectively called 'object safety'
+- object safe traits can be the base trait of a trait object
+  - a trait is object safe if it has the following qualities (defined in RFC 255):
     - It must not require Self: Sized
     - All associated functions must either have a where Self: Sized bound, or
         - Not have any type parameters (although lifetime parameters are allowed), and
         - Be a method that does not use Self except in the type of the receiver.
     - It must not have any associated constants.
     - All supertraits must also be object safe.
-
 - When there isn't a Self: Sized bound on a method, the type of a method receiver must be one of the types:
   - `&Self`
   - `&mut Self`
@@ -213,18 +180,31 @@ let s2 = struct2 {
   - `Rc<Self>`
   - `Arc<Self>`
   - `Pin<P>` where P is one of the types above
-- when you implement a trait, either the trait or the type must be new in the current crate. This is called the coherence rule. It helps Rust ensure that trait implementations are unique. Your code can’t impl Write for u8, because both Write and u8 are defined in the standard library. If Rust let crates do that, there could be multiple implementations of Write for u8, in different crates, and Rust would have no reasonable way to decide which implementation to use for a given method call.
-- You can “borrow a reference” to a value; references are nonowning pointers, with limited lifetimes.
-- Like C and C++, Rust puts plain string literals like "udon" in read-only memory, so for a clearer comparison with the C++ and Python examples, we call to_string here to get heap-allocated String values.
-- Rust tries to choose the smallest lifetime that works.
-- The value to the left of the dot or brackets[] is automatically dereferenced.
-- Expressions like these three are called lvalues, because they can appear on the left side of an assignment:
+- when you implement a trait, either the trait or the type must be new in the current crate
+  - this is called the coherence rule
+  - it helps rust ensure that trait implementations are unique.
+  - code can’t impl Write for u8, because both are defined in the standard library
+  - if allowed:
+    - there could be multiple implementations of Write for u8, in different crates
+    - with no reasonable way to decide which implementation to use for a given method call
+- can borrow a reference to a value
+- references are nonowning pointers, with limited lifetimes
+- like C/C++, rust puts plain string literals like "udon" in read-only memory
+  - so for a clearer comparison with the C++ and Python examples
+    - we call to_string here to get heap-allocated String values
+- the value to the left of the dot or brackets[] is automatically dereferenced
+- expressions like these three are called lvalues
+  - because they can appear on the left side of an assignment:
+
+```  rust
     game.black_pawns // struct field
     coords.1 // tuple element
     pieces[i] // array element
--  Each crate is a Rust project
+```
 
-# cargo
+-  Each crate is a rust project
+
+## cargo
 - when compiling libraries, cargo uses `--crate-type lib` option
   - which tells rustc not to look for main() but instead produce an .rlib file
 - `cargo build --release` produces optimized build
@@ -294,7 +274,7 @@ members = [
 └── target
 ```
 
-# doc
+## doc
 - `cargo doc` to build documentation in target/doc
 - `cargo doc --open` creates and open doc
 - `cargo test --doc` to only run documentation test
@@ -302,78 +282,215 @@ members = [
 - `//!` generate library doc for enclosing item
 - `src/lib.rs` file is crate root
 
-# rustup
+## rustup
 - `rustup override set nightly`
 
-- Modules are Rust’s namespaces. They’re containers for the functions, types, constants, and so on that make up your Rust program or library. Whereas crates are about code sharing between projects, modules are about code organization within a project.
-- rust never compiles its modules separately, even if they are in separate files: when you build a rust crate, you are recompiling all of its modules.  
-- super is an alias for the parent module. Similarly, self is an alias for the current module.
-- While paths in imports are treated as absolute paths by default, self and super let you override that and import from relative paths.
-- Submodules can access private items in their parent modules, but they have to import each one by name. use super::*; only imports items that are marked pub.
-- Methods are also known as associated functions, since they’re associated with a specific type. The opposite of an associated function is a free function, one that is not defined as an impl block’s item.
-- ref is checked at compile time while RefCell at runtime(panic).
-- There is one unusual rule about trait methods: the trait itself must be in scope. Otherwise, all its methods are hidden.
-- Lifetimes never have any impact on machine code. Only differing types cause Rust to compile multiple copies of a generic function.
+## modules
+- modules are rust’s namespaces
+  - they’re containers for the functions, types, constants, and so on that make up program or library
+- crates are about code sharing between projects
+- modules are about code organization within a project
+- rust never compiles its modules separately, even if they are in separate files:
+  - when a rust crate is built, all of its modules are recompiled
+- `super` is an alias for the parent module
+- `self` is an alias for the current module
+- while paths in imports are treated as absolute paths by default
+  - `self` and `super` let you override that and import from relative paths
+- submodules can access private items in their parent modules
+  - but they have to import each one by name
+  - `use super::*;` only imports items that are marked pub
+
+
+- methods are also known as associated functions, since they’re associated with a specific type
+  - opposite of an associated function is a free function
+    - one that is not defined as an impl block’s item
+- ref is checked at compile time while RefCell at runtime(panic)
+- the trait itself must be in scope, otherwise, all its methods are hidden
 - use statics for larger amounts of data, or any time you'll need to borrow a reference to the constant value
-. Statics can be marked mut but not thread-safe
-- use and extern crate declarations are items too. Even though they are just aliases, they can be pub
-- to attach an attribute to a whole crate, add it at the top of main.rs or lib.rs file, before any items, and write #! instead of #
-- assert_eq!(v1, v2) is just like assert!(v1 == v2) except that if the assertion fails, the error message shows both values
-- use debug_assert!() and debug_assert_eq!() instead, to write assertions that are checked only in debug builds
-- to test error cases, add the #[should_panic] attribute
-- A String uses a `Vec<u8>` internally to hold its text, so String need not implement Drop itself; it lets its Vec take care of freeing the characters.
-- If a type implements Drop, it cannot implement the Copy trait. As a rule of thumb, any type that needs to do something special when a value is dropped cannot be Copy.
-- enums are sized: no matter which variant is actually present, an enum always occupies enough space to hold its largest variant.
-- a `Vec<T>` owns a heap-allocated buffer whose size can vary, the Vec value itself is a pointer to the buffer, its capacity, and its length, so Vec<T> is a sized type.
-- By default, struct and enum types are not Copy, but you can implement Copy on them also.
-- Rust does deref coercion when it finds types and trait implementations in three cases:
+. statics can be marked mut but not thread-safe
+- `use` and `extern` crate declarations are items too
+  - even though they are just aliases, they can be pub
+- to attach an attribute to a whole crate:
+  - add it at the top of main.rs or lib.rs file, before any items, and write #! instead of #
+- `assert_eq!(v1, v2)` is just like `assert!(v1 == v2)` 
+  - except that if the assertion fails, the error message shows both values
+- use `debug_assert!()` and `debug_assert_eq!()` for assertions that are checked only in debug builds
+- to test error cases, add the `#[should_panic]` attribute
+- `String` uses a `Vec<u8>` internally to hold its text
+  - so String need not implement Drop itself
+  - it lets its Vec take care of freeing the characters
+- If a type implements `Drop`, it cannot implement `Copy` trait
+  - rule of thumb, any type that needs to do something special when a value is dropped cannot be `Copy`
+- enums are sized
+  - no matter which variant is actually present, an enum always occupies enough space to hold its largest variant
+- a `Vec<T>` owns a heap-allocated buffer whose size can vary
+  - the Vec value itself is a pointer to the buffer
+  - its capacity, and its length, so Vec<T> is a sized type
+- by default, struct and enum types are not `Copy`, but you can implement `Copy` on them also
+- rust does deref coercion when it finds types and trait implementations in three cases:
    * From &T to &U when T: Deref<Target=U>
    * From &mut T to &mut U when T: DerefMut<Target=U>
    * From &mut T to &U when T: Deref<Target=U>
-- Rust doesn’t try deref coercions to satisfy type variable bounds.
+- rust doesn’t try deref coercions to satisfy type variable bounds
 
-- Orphan rule: external traits cannot be implemented on external types
-    * Crate A defines a public trait T.
-    * Crate B defines a public struct S.
-    * Crate C wants to implement T for S.
-- You can implement:
+- orphan rule: external traits cannot be implemented on external types
+    * crate A defines a public trait T
+    * crate B defines a public struct S
+    * crate C wants to implement T for S
+- you can implement:
   - one of your traits on anyone's type
   - anyone's trait on one of your types
   - but not a foreign trait on a foreign type
   - these are called the "orphan rules"
-- Current orphan rules prevent this, even though it would be completely coherent.
-- Only implement Into trait if a conversion to a type outside the current crate is required. From cannot do these type of conversions because of Rust's orphaning rules. See Into for more details.
-- Prefer using Into trait over using From when specifying trait bounds on a generic function. This way, types that directly implement Into can be used as arguments as well.
-- As a stopgap, trait implementations are statically generated up to size 32.
-- The From trait is also very useful when performing error handling.
+- current orphan rules prevent this, even though it would be completely coherent
+- only implement `Into` trait if a conversion to a type outside the current crate is required
+  - `From` cannot do these type of conversions because of rust's orphaning rules
+- prefer using `Into` trait over using `From` when specifying trait bounds on a generic function
+  - this way, types that directly implement `Into` can be used as arguments as well
+- As a stopgap, trait implementations are statically generated up to size 32
+- `From` trait is also very useful when performing error handling
 - `From<T>` for U implies `Into<U>` for T
-- From is reflexive, which means that From<T> for T is implemented
+- `From` is reflexive, which means that `From<T>` for T is implemented
 - a fn value is the memory address of the function’s machine code, just like a function pointer in C++.
-  - parse() can parse any type that implements the FromStr trait
+  - `parse()` can parse any type that implements the `FromStr` trait
 
-# lifetime 
-- Lifetime annotations: some scope can be substituted for 'a that will satisfy this signature
-- Every reference has a lifetime and that you need to specify lifetime parameters for functions or structs that use references.
-- Most of the time, the lifetime problem results from attempting to create a dangling reference or a mismatch of the available lifetimes.
-- Lifetime annotation: The data returned by the function will live as long as the data passed into the function in the argument.
-  - First, the moves always apply to the value proper, not the heapstorage they own. 
-  - Second, the Rust compiler’s code generation is good at “seeing through” all these moves; in practice, the machine code often stores the value directly where it belongs.
+## ownership
+
+- all values have single owner
+  - enforced through borrow checker
+- references are never null
+- borrowing rules:
+  - can have either (not both) one mutable reference or any number of immutable references
+- references must always be valid
+- no lifetime annotation required when `self` is a parameter
+- throughout its lifetime, a shared reference makes its referent read-only
+  - may not assign to the referent or move its value elsewhere
+- shared access is read-only access
+  - values borrowed by shared references are read-only
+  - across the lifetime of a shared reference:
+    - neither its referent, nor anything reachable from that referent, can be changed by anything
+  - there exist no live mutable references to anything in that structure:
+    - its owner is held read- only and so on
+    - it’s really frozen.
+- mutable access is exclusive access
+  - value borrowed by a mutable reference is reachable exclusively via that reference
+  - across the lifetime of a mutable reference
+    - there is no other usable path to its referent, or to any value reachable from there
+  - the only references whose lifetimes may overlap with a mutable reference are:
+    - those you borrow from the mutable reference itself
+
+``` rust
+let mut x = 10;
+let r1 = &x;
+let r2 = &x;     // ok: multiple shared borrows permitted
+x += 10;       // error: cannot assign to `x` because it is borrowed
+let m = &mut x;  // error: can't borrow `x` as mutable bcoz its also borrowed as immutable
+let mut y = 20;
+let m1 = &mut y;
+let m2 = &mut y;  // error: cannot borrow as mutable more than once
+let z = y;      // error: cannot use `y` because it was mutably borrowed
+
+// It is OK to reborrow a shared reference from a shared reference:
+let mut w = (107, 109);
+let r = &w;
+let r0 = &r.0;    // ok: reborrowing shared as shared
+let m1 = &mut r.1; // error: can't reborrow shared as mutable
+
+// You can reborrow from a mutable reference:
+let mut v = (136, 139);
+let m = &mut v;
+let m0 = &mut m.0; // ok: reborrowing mutable from mutable
+*m0 = 137;
+// ok: reborrowing shared from mutable, and doesn't overlap with m0
+let r1 = &m.1;
+v.1;          // error: access through other paths still forbidden
+
+int x = 42;      // int variable, not const
+const int *p = &x;  // pointer to const int
+assert(*p == 42);
+x++;         // change variable directly
+assert(*p == 43);  // “constant” referent's value has changed
+
+
+let mut x = 42;    // nonconst i32 variable
+let p = &x;      // shared reference to i32
+assert_eq!(*p, 42);
+x += 1;       // error: cannot assign to x because it is borrowed
+assert_eq!(*p, 42);  // if you take out the assignment, this is true
+```
+
+- when you see expected type `()` in error msg, look for missing semicolon first
+- all blocks of `if` and `match` expression must produce values of same type
+- blocks are also expressions, mean they evaluate to a value
+- `::` operates on namespace
+- `..` can be only used once per tuple pattern
+- `::<...>` is called turbofish.
+- `use` directives can be used to "bring in scope" names from other namespaces
+  - in use directives, curly brackets are "globs"
+- Using @ lets us test a value and save it in a variable within one pattern
+- panic:
+  - not a crash
+  - not undefined behavior
+  - more like a RuntimeException in Java.
+- Types are namespaces too, and methods can be called as regular functions
+- Rust inserts this at the beginning of every module
+``` rust
+use std::prelude::v1::*;
+```
+## lifetime
+- annotations:
+  - some scope can be substituted for `'a` that will satisfy this signature
+  - to tell Rust how generic lifetime parameters of multiple references relate to each other
+  - don’t change how long any of the references live
+    - rather, they describe the relationships of the lifetimes
+      - of multiple references to each other without affecting the lifetimes
+- every reference has lifetime
+- we’re not changing the lifetimes of any values passed in or returned
+  - specifying that borrow checker should reject any values that don’t adhere to these constraints
+- lifetimes never have any impact on machine code
+  - only differing types cause Rust to compile multiple copies of a generic function
+- specify lifetime parameters for functions or structs that use references
+- at runtime:
+  - a reference is just address
+  - its lifetime is part of its type
+  - lifetime has no runtime representation
+- function argument and return value must have the same lifetime
+- if function doesn’t return any references, then no need to write out lifetimes
+  - Rust just assigns a distinct lifetime to each spot that needs one
+- Rust tries to choose the smallest lifetime that works
+- mostly the lifetime problem results from dangling reference or mismatch of available lifetimes
+  - which cause a program to reference data other than the data it’s intended to reference
+- data returned by function will live as long as data passed into function in the argument
+  - first, the moves always apply to the value proper, not the heapstorage they own
+  - second, rust compiler’s code generation is good at “seeing through” all these moves
+    - in practice, the machine code often stores the value directly where it belongs
 - functions that take references are generic, lifetimes are generic parameters
-- rust ensures safety by using lifetimes instead of garbage collection, which makes rust fast
-- the annotations are meant to tell Rust how generic lifetime parameters of multiple references relate to each other
--  struct lifetime annotation means an instance of struct can’t outlive the reference it holds in its part field
-- Lifetimes on function or method parameters are called input lifetimes, and lifetimes on return values are called output lifetimes.
-- These rules apply to fn definitions as well as impl blocks.
-The first rule is that each parameter that is a reference gets its own lifetime parameter. In other words, a function with one parameter gets one lifetime parameter: fn foo<'a>(x: &'a i32); a function with two parameters gets two separate lifetime parameters: fn foo<'a, 'b>(x: &'a i32, y: &'b i32); and so on.
-The second rule is if there is exactly one input lifetime parameter, that lifetime is assigned to all output lifetime parameters: fn foo<'a>(x: &'a i32) -> &'a i32.
-The third rule is if there are multiple input lifetime parameters, but one of them is &self or &mut self because this is a method, the lifetime of self is assigned to all output lifetime parameters. This third rule makes methods much nicer to read and write because fewer symbols are necessary.
+- rust ensures safety by using lifetimes instead of garbage collection, makes rust fast
+-  struct lifetime annotation: an instance of struct can’t outlive the reference it holds in its part field
+- Lifetimes on function or method parameters are called input lifetimes
+- lifetimes on return values are called output lifetimes
+- these rules apply to fn definitions as well as impl blocks
+  - first rule, each parameter that is a reference gets its own lifetime parameter
+    - function with one parameter gets one lifetime parameter:
+      - `fn foo<'a>(x: &'a i32);`
+    - function with two parameters gets two separate lifetime parameters:
+      - `fn foo<'a, 'b>(x: &'a i32, y: &'b i32);` and so on
+- second rule, if there is exactly one input lifetime parameter:
+  - that lifetime is assigned to all output lifetime parameters:
+    - `fn foo<'a>(x: &'a i32) -> &'a i32`
+- third rule, if there are multiple input lifetime parameters:
+  - but one of them is `&self` or `&mut self` because this is a method
+  - the lifetime of `self` is assigned to all output lifetime parameters
+  - this rule makes methods much nicer to read/write because fewer symbols are necessary
 - `'static` reference can live for the entire duration of the program
-- Lifetime names for struct fields always need to be declared after the impl keyword and then used after the struct’s name, because those lifetimes are part of the struct’s type. In method signatures inside the impl block, references might be tied to the lifetime of references in the struct’s fields, or they might be independent.
-- `{}` is Display format specifier, works for things that has Display trait
-- `{:?}` is Debug format specifier works for things that has Debug trait
-- `{:#?}` for pretty-print
+- lifetime names for struct fields always declared
+  - after the impl keyword and then used after the struct’s name
+  - because those lifetimes are part of the struct’s type
+- in method signatures inside the impl block
+  - references might be tied to the lifetime of references in the struct’s fields
+  - or references  might be independent
 
-# const and 'static 
+## const and 'static
 - const are static, immutable and inlined, simply replacing the const name with its value
   - this includes usage of constants from external crates, and non-Copy types
   - provides a convenient alternative to code duplication
@@ -408,7 +525,7 @@ The third rule is if there are multiple input lifetime parameters, but one of th
   - let s: &'static str = "I have a static lifetime.";  
     - text of string is stored directly in the program’s binary, which is always available
 
-# const fn
+## const fn
 - it is a function that one is permitted to call from a const or static context
 - it only restricts the types that arguments and the return type may use
 - prevent various expressions from being used within it
@@ -422,34 +539,47 @@ The third rule is if there are multiple input lifetime parameters, but one of th
 - floating point values are treated just like generic parameters
   - without trait bounds beyond `Copy`
 
-# unsafe 
+## unsafe
 - unsafe superpower includes:
   - dereference a pointer
   - call an unsafe function or method
   - access or modify a mutable static variable
   - implement an unsafe trait
   - access fields of union S
-- we can create raw pointers in safe code but can't dereference raw pointers outside an unsafe block
-- creating a pointer does not harm, its only when we try to access the value that it points at might end up ddealing with an invlid value
-- rust borrow checker can't understand that we are borrowing different parts of the slice, it only know that we are borrowing from the same slice twice
-- use `extern` to facilitate Foreign Function Interface (FFI): way for programming language to define functions and enables different programming languages to call those functions
-- orphan rule can be bypassed using Newtype pattern using Wrapper struct to hold instance of the type.If we want the Newtype to have every method the inner type has, implementing `Deref` trait on the Wrapper to return the inner type would be a solution
+- can create raw pointers in safe code
+  - but can't dereference raw pointers outside an unsafe block
+- creating a pointer does not harm
+  - its only when we try to access the value that it points at might end up ddealing with an invlid value
+- rust borrow checker can't understand that we are borrowing different parts of the slice
+  - it only know that we are borrowing from the same slice twice
+- use `extern` to facilitate Foreign Function Interface (FFI):
+  - way for programming language to define functions
+  - enables different programming languages to call those functions
+- orphan rule can be bypassed using Newtype pattern using Wrapper struct to hold instance of the type
+  - if we want the Newtype to have every method the inner type has:
+    - implementing `Deref` trait on the Wrapper to return the inner type would be a solution
 
-# dynamically sized type (DST) or unsized type 
-- ex: str: we can't know how long the string is untill runtime, means we can't crate the variable of type str nor can we take an argument of type str
+## dynamically sized type (DST) or unsized type
+- ex: str: we can't know how long the string is untill runtime, means:
+  - can't crate a variable of type str nor can take an argument of type str
 - str and [T] types denote sets of values of varying sizes, they are unsized types
 - we must always put values of dynamically sized types behind the pointer of some kind
 - every trait is a DST we can refer to by using the name of the trait
 - Rust supports polymorphism with two related features: traits and generics
-- Rust can’t store unsized values in variables or pass them as arguments.  You can only deal with them through pointers like &str or Box<Write>, which themselves are sized
-- A mutable slice &mut [T] lets you read and modify elements, but can’t be shared; a shared slice &[T] lets you share access among several readers, but doesn’t let you modify elements
-- `Sized` trait to determine weather or not a type's size is known at compile time. The trait is automatically implemented for everything whose size is known at compile time. Rust implicitly adds a bound on  Sized trait to every generic function
-  - All type parameters have an implicit bound of Sized. 
+- Rust can’t store unsized values in variables or pass them as arguments
+  - you can only deal with them through pointers like &str or Box<Write>, which are sized
+- mutable slice &mut [T] lets you read and modify elements, but can’t be shared
+  - a shared slice &[T] lets share access among several readers, but not modify elements
+- `Sized` trait to determine weather or not a type's size is known at compile time
+  - `Sized` is automatically implemented for everything whose size is known at compile time
+  - rust implicitly adds a bound on  sized trait to every generic function
+  - All type parameters have an implicit bound of Sized
   - The special syntax ?Sized can be used to remove this bound if it’s not appropriate.
   - The one exception is implicit `Self` type of a trait
   - A trait doesnot have an implicit `Sized` bound as this is incompatible with trait objects
   - A  trait need to work with all possible implementators, and thus could be any size
-  - Although rust will let you bind `Sized` to a trait, you won't will able to use it to form a trait object later
+  - rust let you bind `Sized` to a trait
+    - won't able to use it to form a trait object later
   
   ``` rust
      trait Foo { }
@@ -463,7 +593,8 @@ The third rule is if there are multiple input lifetime parameters, but one of th
      let y: &dyn Bar = &Impl; // error: the trait `Bar` cannot be made into an object
   ```
 
-- By default, generic function will work only on types that have a known size at compile time. However, you can use the following special syntax to relax this restriction:
+- by default, generic function will work only on types that have a known size at compile time
+  - however, you can use the following special syntax to relax this restriction:
 
   ``` rust
   
@@ -474,43 +605,63 @@ The third rule is if there are multiple input lifetime parameters, but one of th
      } // This syntax is only available for Sized, not any other trait
   ```
 
-# std::cell::Cell 
+## std::cell::Cell
 - if we can't get reference to a value then mutating it is f
 - not allowed to cast a shared reference to exclusive reference, except `std::cell::UnsafeCell`
-- Cell and RefCell allow sharing or aliasing(&T) with mutability(&mut T) in a controlled manner but in a single threaded way i.e. not thread safe and will give compile-time error
+- Cell and RefCell allow sharing or aliasing(&T) with mutability(&mut T) in a controlled manner
+  - but in a single threaded way i.e. not thread safe and will give compile-time error
 - do not implement `Sync` and provides interior mutability instead of Rust's inherited mutability
-- RefCell enforces borrowing rules at runtime. The advantage is that certain memory-safe scenarios are allowed, whereas they are disallowed by compile-time check
+- RefCell enforces borrowing rules at runtime
+  - the advantage is that certain memory-safe scenarios are allowed
+  - whereas they are disallowed by compile-time check
 - problems like 'Halting' are impossible to detect
 - have single owner
-- RefCell uses lifetime for dynamic borrowing which is process by that claim temporary, exclusive, mutable access to the inner value and tracked at runtime. It is possible to attempt to borrow a value that is already mutably  borrowed which results in thread pacic.
-- if we had not let the previous borrow of the cache fall out of scope then the subsequent borrow would cause a dynamic thread panic. This is the major hazard of using RefCell
+- `RefCell` uses lifetime for dynamic borrowing 
+  - which is process by that claim temporary, exclusive, mutable access to the inner value and tracked at runtime
+  - its possible to attempt to borrow a value that is already mutably borrowed which results in thread pacic
+- if we had not let the previous borrow of the cache fall out of scope then the subsequent borrow would cause a dynamic thread panic
+  - this is the major hazard of using `RefCell`
 - when to choose interior mutability:
   - introdicing mutabilitly inside of something immutable
   - implementation details of logically-immutable methods
   - mutating implementations of Clone
-  
-# std::boxed::Box<T> 
 
+## std::boxed::Box<T>
 - don't have performance overhead other than storing data on heap instead of stack
 - situations to use Box
   - when size not known at compile time and want to use that value of that type in a context that requires exact size
   - when you have a large amount of data and want to transfer ownership but ensure the data won't be copied when you do so
   - when you want to own a value and you care only that it's a type that implemants a particular trait rather than being a specific type
-- the reason the deref method returns a reference to a value, and then the plain dereference outside the patentheses in `*(y.deref())` is still necessary, is the ownership system. If the deref method returned the value directly instead of reference to the value, the value would be moved out of the self. So we don't want to take the ownership of the inner value
-- deref coercion works only on types that implement the `Deref` trait. Deref coercion converts such a type into a reference to anther type. For ex. deref coercion converts &String to &str because String implements the Deref trait such that it returns str. Deref coercion happens automatically when we pass a reference to a particular type's value as an argument to a function or method that doesn't match parameter type in the function or method definition. A sequence of calls to the deref method converts the type we provided into the type the parameter needs
-- the Deref trait is defined for the types involved, Rust will analyze the types and use Deref::deref as many times as necessary to get a reference to match the paramerter's type. The number of times that Deref::deref needs to be inserted is resolved at the compile time, so there is no runtime penalty for taking advantage of deref coercion
-- Rust does deref coercion when it finds types and trait implementations in three cases:
+- the reason the deref method returns a reference to a value, and then the plain dereference outside the patentheses in `*(y.deref())` is still necessary, is the ownership system
+  - if the deref method returned the value directly instead of reference to the value, the value would be moved out of the self
+  - so we do not want to take the ownership of the inner value
+- deref coercion works only on types that implement the `Deref` trait
+  - deref coercion converts such a type into a reference to anther type
+  - For ex. deref coercion converts &String to &str because String implements the Deref trait such that it returns str
+  - deref coercion happens automatically:
+    - when we pass a reference to a particular type's value as an argument to a function
+    - or method that doesn't match parameter type in the function or method definition
+  - A sequence of calls to the deref method converts the type we provided into the type the parameter needs
+- the Deref trait is defined for the types involved
+  - rust will analyze the types and use Deref::deref as many times as necessary to get a reference to match the paramerter's type
+  - the number of times that Deref::deref needs to be inserted is resolved at the compile time, so there is no runtime penalty for taking advantage of deref coercion
+- rust does deref coercion when it finds types and trait implementations in three cases:
   - From &T to &U when T: Deref<Target=U>
   - From &mut T to &mut U when T: DerefMut<Target=U>
   - From &mut T to &U when T: Deref<Target=U>
-  The third case is trickier: Rust will also coerce a mutable reference to an immutable one but the reverse is not possible. Because of the borrowing rules, if you have a mutable reference, that mutable reference must be the only reference to that data otherwise the program wouldn't compile. Converting one mutable reference to one immutable reference will never break the borrowing rule. Converting an immutable reference to a mutable reference would require that the initial immutable referenc is the only immutable reference to that data, but the borrowing rules don't guarantee that. Therefore, Rust can't make the assumption that converting an immutable reference to a mutable reference is possible
+- the third case is trickier: Rust will also coerce a mutable reference to an immutable one but the reverse is not possible
+  - because of the borrowing rules, if you have a mutable reference, that mutable reference must be the only reference to that data otherwise the program wouldn't compile
+  - Converting one mutable reference to one immutable reference will never break the borrowing rule
+  - Converting an immutable reference to a mutable reference would require that the initial immutable referenc is the only immutable reference to that data, but the borrowing rules don't guarantee that
+  - Therefore, rust can't make the assumption that converting an immutable reference to a mutable reference is possible
 - variables are dropped in the reverse oreder of their creation
-- Rust doesn't let you call the Drop trait's drop method manually, instead you have to call the std::mem::drop function if you want forced drop before the end of its scope
+- rust doesn't let you call the Drop trait's drop method manually
+  - instead you have to call the std::mem::drop function if you want forced drop before the end of its scope
 
-# std::rc::Rc<T> 
+## std::rc::Rc<T> 
 - works in single threaded scenario
 
-# trait std::iter::Iterator 
+## trait std::iter::Iterator 
 - iterator: way of processing a series of elements
   - produce a series of values
   - lazy and do nothing unless consumed
@@ -548,7 +699,7 @@ trait Iterator{
   - `iter_mut()` iterates over &mut T
   - `into_iter()` iterates over T
 
-# closure 
+## closure
 - closures: anonymous function-like construct you can store in a variable
 - it borrows:
   - when rust creates a closure, it can automatically borrow a ref to a captured variable
@@ -614,11 +765,11 @@ trait FnOnce() -> R {
         - therefore 'static lifetime is added
   - code that works  with closures usually needs to be generic
   
-# variance 
+## variance
 - fn flips the variance of args
 - mutable refs are invariant in their arg type
 
-# refutability 
+## refutability 
 ``` rust
 // irrefultable pattern
 let some_option_value: Option<i32> = None;
@@ -632,11 +783,11 @@ let x = 4;
 - gives warning if it doesn’t make sense to use if let with an irrefutable pattern
   - ex: if let x = 5 { ... };
 
-# test
+## test
 - `cargo test -- --nocapture` to enable print statement
 - start test names with “should”
 
-# std::marker::PhantomData<T> and Zero Sized Type 
+## std::marker::PhantomData<T> and Zero Sized Type 
 - where T: ?Sized
   - PhantomData: zero-sized type used to mark things that “act like” they own a T
 - tells compiler that:
@@ -647,20 +798,20 @@ let x = 4;
   - so as not to indicate ownership 
 - phantom type parameter: is simply a type parameter which is never used
 
-# std::marker::Send
+## std::marker::Send
 - ownership of values of the type implementing `Send` can be transferred between threads
 - Almost every rust type id `Send`
-  - except `Rc<T>`
+  - except `Rc<T>`, `Mutex<T>`
 - types composed entirely of types that are `Send` are also `Send`
 
-# std::marker::Sync
+## std::marker::Sync
 - it is safe for type implementing `Sync` to be referenced from multiple threads
 - any type T is `Sync` if &T is `Send`
   - means the reference can be sent safely to another thread
 - types composed entirely of types that are `Sync` are also `Sync`
 - `RefCell<T>`, the family of related `Cell<T>` types are not `Sync`
 
-# std::ptr 
+## std::ptr 
 - a null pointer is never valid, not even for accesses of size zero
 - for a pointer to be valid, it is necessary, but not always sufficient,
   - the pointer be dereferenceable
@@ -681,25 +832,25 @@ let x = 4;
   - as long as the underlying object is live
   - and no reference (just raw pointers) is used to access the same memory
   
-# raw unsafe pointers 
+## raw unsafe pointers
 - `*const T` or `*mut T` 
 
-# Cargo.toml 
+## Cargo.toml
 - two build profiles: 
   - [profile.dev]
   - [profile.release]
   
-# str 
+## str
 - a UTF-8 string slice
 - a primitive type
 - typically accessed as immutable references: &str
  
-# alloc::string::String 
+## alloc::string::String 
 - Use the owned String for building and mutating strings.
 - For converting to strings use the format! macro
 - for converting from strings use the FromStr trait
 
-# macro
+## macro
 - generic syntax extension form
 - macros are expanded into abstract syntax trees,
   - rather than string preprocessing
@@ -771,7 +922,7 @@ let x = 4;
   - expansion part of rule is called its _transcriber_
 
 
-# miscellaneous
+## miscellaneous
 - reflexive, means `Into<T> for T` is implemented
 
-# unreachable!(), unimplemented!()
+## unreachable!(), unimplemented!()
