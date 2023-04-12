@@ -54,6 +54,27 @@
 - `{}` is Display format specifier, works for things that has Display trait
 - `{:?}` is Debug format specifier works for things that has Debug trait
 - `{:#?}` for pretty-print
+- `=` stores the value of rhs expression in the "place" named by lhs
+
+
+- when you see expected type `()` in error msg, look for missing semicolon first
+- all blocks of `if` and `match` expression must produce values of same type
+- blocks are also expressions, mean they evaluate to a value
+- `::` operates on namespace
+- `..` can be only used once per tuple pattern
+- `::<...>` is called turbofish
+- `use` directives can be used to "bring in scope" names from other namespaces
+  - in use directives, curly brackets are "globs"
+- Using @ lets us test a value and save it in a variable within one pattern
+- panic:
+  - not a crash
+  - not undefined behavior
+  - more like a RuntimeException in java
+- types are namespaces too, and methods can be called as regular functions
+- rust inserts this at the beginning of every module
+``` rust
+use std::prelude::v1::*;
+```
 
 ## `!` never type
 - ! is empty type or never type because it has no value
@@ -127,7 +148,7 @@ impl MyTrait for fn() -> ! {}
 - A trait that uses the `Self` type is incompatible with trait objects
 - with trait objects, you lose the type information Rust needs to type-check your program
 - a trait object points to both
-  - an instance of a type implementing our specified trait 
+  - an instance of a type implementing our specified trait
   - as well as a table used to lookup trait methods on that type at runtime
 - we create a trait object by specifying some sort of pointer
   - such as & reference or Box<T> smart poiner
@@ -142,14 +163,14 @@ impl MyTrait for fn() -> ! {}
   - that is, the type has been erased
 - `dyn Trait` reference contains two pointers
   - one pointer goes to the data(eg. an instance of a struct)
-  - another poiner goes to a map of method call names to a function pointers 
+  - another poiner goes to a map of method call names to a function pointers
     - known as virtual method table or vtable
   - at runtime, when a method needs to be called on the `dyn Trait`
-    - the vtable is consulted to get the function pointer 
+    - the vtable is consulted to get the function pointer
     - and then that function pointer is called
     - it has additional runtime cost
     - also, method cannot be inlined by compiler.
-- `dyn Trait` produce smaller code than `impl Trait` / generic parameters 
+- `dyn Trait` produce smaller code than `impl Trait` / generic parameters
   - as the method won't be duplicated for each concrete type
 
 ## struct
@@ -312,7 +333,7 @@ members = [
   - even though they are just aliases, they can be pub
 - to attach an attribute to a whole crate:
   - add it at the top of main.rs or lib.rs file, before any items, and write #! instead of #
-- `assert_eq!(v1, v2)` is just like `assert!(v1 == v2)` 
+- `assert_eq!(v1, v2)` is just like `assert!(v1 == v2)`
   - except that if the assertion fails, the error message shows both values
 - use `debug_assert!()` and `debug_assert_eq!()` for assertions that are checked only in debug builds
 - to test error cases, add the `#[should_panic]` attribute
@@ -351,7 +372,7 @@ members = [
 - `From` trait is also very useful when performing error handling
 - `From<T>` for U implies `Into<U>` for T
 - `From` is reflexive, which means that `From<T>` for T is implemented
-- a fn value is the memory address of the function’s machine code, just like a function pointer in C++.
+- a fn value is the memory address of the function’s machine code, just like a function pointer in c++
   - `parse()` can parse any type that implements the `FromStr` trait
 
 ## ownership
@@ -378,6 +399,15 @@ members = [
     - there is no other usable path to its referent, or to any value reachable from there
   - the only references whose lifetimes may overlap with a mutable reference are:
     - those you borrow from the mutable reference itself
+- variables including function arguments are dropped in reverse order
+  - nested values are dropped in sourcecode order
+  - the fields of a struct are dropped in declaration order
+  - the fields of the active enum variant are dropped in declaration order
+  - the fields of a tuple are dropped in order
+  - the elements of an array or owned slice are dropped from the first element to the last
+  - the variables that a closure captures by move are dropped in an unspecified order
+  - trait objects run the destructor of the underlying type
+  - other types don't result in any further drops
 
 ``` rust
 let mut x = 10;
@@ -419,24 +449,6 @@ x += 1;       // error: cannot assign to x because it is borrowed
 assert_eq!(*p, 42);  // if you take out the assignment, this is true
 ```
 
-- when you see expected type `()` in error msg, look for missing semicolon first
-- all blocks of `if` and `match` expression must produce values of same type
-- blocks are also expressions, mean they evaluate to a value
-- `::` operates on namespace
-- `..` can be only used once per tuple pattern
-- `::<...>` is called turbofish.
-- `use` directives can be used to "bring in scope" names from other namespaces
-  - in use directives, curly brackets are "globs"
-- Using @ lets us test a value and save it in a variable within one pattern
-- panic:
-  - not a crash
-  - not undefined behavior
-  - more like a RuntimeException in Java.
-- Types are namespaces too, and methods can be called as regular functions
-- Rust inserts this at the beginning of every module
-``` rust
-use std::prelude::v1::*;
-```
 ## lifetime
 - annotations:
   - some scope can be substituted for `'a` that will satisfy this signature
@@ -508,12 +520,14 @@ use std::prelude::v1::*;
     - not to the result of a value that could only be computed at runtime
   - not associated with specific memory location
   - references to the same constant are not necessarily guaranteed to refer to same memory address
+  - constant has no memory or other storage associated with it (it is not a place)
+  - think of constant as a convenient name for a particular value
   - constant expression may only be omitted in a trait definition
   - constants can contain destructors
   - unlike associated const, a free const may be unnamed by using underscore instead of name
     - As with underscore imports, macros may safely emit the same unnamed const in the same scope more than once
 - const, like statics, should always be in SCREAMING_SNAKE_CASE
-- `'static` variables point to a single location in memory for sharing 
+- `'static` variables point to a single location in memory for sharing
   - values in static variables have a fixed address in memory
   - static variable can be mutable and it is unsafe to access or modify them
   - can only store resferences with the 'static lifetime
@@ -521,8 +535,8 @@ use std::prelude::v1::*;
   - act as a single value across the entire codebase
   - global variables are called static varibles in rust
   - `'static` reference can live for the entire duration of the program
-  - all string literals have the `'static` lifetime  
-  - let s: &'static str = "I have a static lifetime.";  
+  - all string literals have the `'static` lifetime
+  - let s: &'static str = "I have a static lifetime.";
     - text of string is stored directly in the program’s binary, which is always available
 
 ## const fn
@@ -580,7 +594,7 @@ use std::prelude::v1::*;
   - A  trait need to work with all possible implementators, and thus could be any size
   - rust let you bind `Sized` to a trait
     - won't able to use it to form a trait object later
-  
+
   ``` rust
      trait Foo { }
      trait Bar: Sized { }
@@ -597,9 +611,9 @@ use std::prelude::v1::*;
   - however, you can use the following special syntax to relax this restriction:
 
   ``` rust
-  
+
      // ?Sized i.e that is may or may not be sized
-     fn generic<T: ?Sized>(t: &T) { 
+     fn generic<T: ?Sized>(t: &T) {
      // the type of parameter t switched from T to &T, need some kind of pointer
      ...
      } // This syntax is only available for Sized, not any other trait
@@ -616,7 +630,7 @@ use std::prelude::v1::*;
   - whereas they are disallowed by compile-time check
 - problems like 'Halting' are impossible to detect
 - have single owner
-- `RefCell` uses lifetime for dynamic borrowing 
+- `RefCell` uses lifetime for dynamic borrowing
   - which is process by that claim temporary, exclusive, mutable access to the inner value and tracked at runtime
   - its possible to attempt to borrow a value that is already mutably borrowed which results in thread pacic
 - if we had not let the previous borrow of the cache fall out of scope then the subsequent borrow would cause a dynamic thread panic
@@ -658,10 +672,10 @@ use std::prelude::v1::*;
 - rust doesn't let you call the Drop trait's drop method manually
   - instead you have to call the std::mem::drop function if you want forced drop before the end of its scope
 
-## std::rc::Rc<T> 
+## std::rc::Rc<T>
 - works in single threaded scenario
 
-## trait std::iter::Iterator 
+## trait std::iter::Iterator
 - iterator: way of processing a series of elements
   - produce a series of values
   - lazy and do nothing unless consumed
@@ -680,16 +694,16 @@ use std::prelude::v1::*;
 - a value of type `Self` cannot be built from an iterator
   - over elements of type `A`: `std::iter::Iterator<Item={A}>`
 - by implementing `IntoIterator` your type will work with for loop syntax
-- std collections are all iterable, as are arrays and slices.
+- std collections are all iterable, as are arrays and slices
 
 ``` rust
 trait Iterator{
     type Item; // type of value the iterator produces
-    
-    // returns iterator's next value Some(value) 
+
+    // returns iterator's next value Some(value)
     // or None to indicate end of sequence
     fn next(&mut self) -> Option<Self::Item>;
-    
+
     ..// many default methods
 }
 ```
@@ -753,28 +767,28 @@ trait FnOnce() -> R {
 - FnMut: trait of closures that requires mut access to a value
   - but doesn’t drop any values
   - can be called multiple times if the closure itself is declared mut
-- FnOnce: trait of closures that can be called once 
+- FnOnce: trait of closures that can be called once
 
 - every closure has its own type
   - so every closure has an adhoc type created by the compiler
     - large enough to hold that data
   - no two closures, even if identical, have the same type
   - need to use boxes and trait objects for more than one type of closure as parameter
-    - not safe to store closure if 
+    - not safe to store closure if
       - it contains borrowed references to variables that are about to go out of scope
         - therefore 'static lifetime is added
   - code that works  with closures usually needs to be generic
-  
+
 ## variance
 - fn flips the variance of args
 - mutable refs are invariant in their arg type
 
-## refutability 
+## refutability
 ``` rust
 // irrefultable pattern
 let some_option_value: Option<i32> = None;
 let Some(x) = some_option_value;
-	
+
 // refutable pattern
 let x = 4;
 ```
@@ -787,20 +801,20 @@ let x = 4;
 - `cargo test -- --nocapture` to enable print statement
 - start test names with “should”
 
-## std::marker::PhantomData<T> and Zero Sized Type 
+## std::marker::PhantomData<T> and Zero Sized Type
 - where T: ?Sized
-  - PhantomData: zero-sized type used to mark things that “act like” they own a T
+  - `PhantomData`: zero-sized type used to mark things that “act like” they own a T
 - tells compiler that:
   - your type acts as though it stores a value of type T, even though it doesnt
 - if your struct does not own the data of type T:
-  - it is better to use a reference type 
-  - like PhantomData<&'a T> (ideally) or PhantomData<*const T> (if no lifetime applies)
-  - so as not to indicate ownership 
+  - it is better to use a reference type
+  - like `PhantomData<&'a T>` (ideally) or `PhantomData<*const T>` (if no lifetime applies)
+  - so as not to indicate ownership
 - phantom type parameter: is simply a type parameter which is never used
 
 ## std::marker::Send
 - ownership of values of the type implementing `Send` can be transferred between threads
-- Almost every rust type id `Send`
+- almost every rust type id `Send`
   - except `Rc<T>`, `Mutex<T>`
 - types composed entirely of types that are `Send` are also `Send`
 
@@ -811,9 +825,9 @@ let x = 4;
 - types composed entirely of types that are `Sync` are also `Sync`
 - `RefCell<T>`, the family of related `Cell<T>` types are not `Sync`
 
-## std::ptr 
+## std::ptr
 - a null pointer is never valid, not even for accesses of size zero
-- for a pointer to be valid, it is necessary, but not always sufficient,
+- for a pointer to be valid, it is necessary, but not always sufficient
   - the pointer be dereferenceable
   - memory range of given size starting at the pointer must be within bounds of a single allocated object
   - every (stack-allocated) variable is considered a separate allocated object.
@@ -831,28 +845,28 @@ let x = 4;
 - result of casting a reference to a pointer is valid for:
   - as long as the underlying object is live
   - and no reference (just raw pointers) is used to access the same memory
-  
+
 ## raw unsafe pointers
-- `*const T` or `*mut T` 
+- `*const T` or `*mut T`
 
 ## Cargo.toml
-- two build profiles: 
+- two build profiles:
   - [profile.dev]
   - [profile.release]
-  
+
 ## str
 - a UTF-8 string slice
 - a primitive type
 - typically accessed as immutable references: &str
- 
-## alloc::string::String 
+
+## alloc::string::String
 - Use the owned String for building and mutating strings.
 - For converting to strings use the format! macro
 - for converting from strings use the FromStr trait
 
 ## macro
 - generic syntax extension form
-- macros are expanded into abstract syntax trees,
+- macros are expanded into abstract syntax trees
   - rather than string preprocessing
   - so you don't get unexpected precedence bugs
 - instead of generating a function call, macros are expanded into source code
@@ -924,5 +938,8 @@ let x = 4;
 
 ## miscellaneous
 - reflexive, means `Into<T> for T` is implemented
+
+## commands
+- rustc --print sysroot
 
 ## unreachable!(), unimplemented!()

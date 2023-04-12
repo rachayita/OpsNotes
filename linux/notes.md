@@ -19,12 +19,12 @@
 - > `xrandr -d :0 --output <OUTPUT> --mode 1360x768`
 
 # arch graphical driver
-> xf86-video-vmware 
+> xf86-video-vmware
 
 # enable tap click
 - https://www.reddit.com/r/archlinux/comments/86g4ef/how_to_enable_tap_click/
 - 40-libinput.conf or 30-touchpad.conf
- 
+
 ```
 Section "InputClass"
 	Identifier "libinput touchpad catchall"
@@ -32,7 +32,8 @@ Section "InputClass"
 	MatchDevicePath "/dev/input/event*"
 	Option "Tapping" "True"
 	Option "TappingDrag" "True"
-	Option "ScrollMethod" "Edge"
+# 	Option "ScrollMethod" "Edge"
+	Option "ScrollMethod" "TwoFinger"
 	Option "AccelProfile" "linear"
 	Option "AccelSpeed" "1"
 	Option "DisableWhileTyping" "False"
@@ -41,26 +42,29 @@ EndSection
 ```
 
 # commands
-- `inxi -F`sys info 
+- `inxi -F`sys info
 - `ripgrep` rg for search in docs
 - axel
 - `entr` run arbitrary commands when files change
 - `xev` to know key number
-- `some-command | xclip -sel clip` copy to clipboard 
+- `some-command | xclip -sel clip` copy to clipboard
 - `curl wttr.in/city,country`
 - `curl getnews.tech/<topic>`
 - `find "4DOS" wikipedia.txt | tee 4DOS.txt | sort > 4DOSsorted.txt`
-- `exec xmodmap -e "keysym Menu = Super_R" 2>/dev/null &` map menu key to super 
+- `exec xmodmap -e "keysym Menu = Super_R" 2>/dev/null &` map menu key to super
 - `cat ~/.ssh/id_rsa.pub | ssh admin@server "sudo tee -a /root/.ssh/authorized_keys2 > /dev/null"`
-- `git config --local status.showUntrackedFiles no` donot show untracked files locally 
-- `lshw -c video` cmd to show video driver 
-- `netstat -lntpu` list open network ports and the processes 
-- `curl ifconfig.me` get your ip 
+- `git config --local status.showUntrackedFiles no` donot show untracked files locally
+- `lshw -c video` cmd to show video driver
+- `netstat -lntpu` list open network ports and the processes
+- `curl ifconfig.me` get your ip
 - pacman - get list of packages installed by user>
   > `comm -23 <(pacman -Qqett | sort) <(pacman -Qqg base -g base-devel | sort | uniq)`
 - `xrandr --output eDP-1 --brightness 0.5` adjust brightness
 - `dd if=file.iso of=/dev/sdb bs=512k status=progress` create bootable usb
 - `gtk-update-icon-cache -f -t ~/.icons/<theme_name>` run to update the icon cache
+- `sudo mkfs.vfat /dev/sdb1`   to format usb drive with FAT32
+
+
 
 # 5 sec lag problem with intel gpu
 - https://github.com/qutebrowser/qutebrowser/issues/4641
@@ -117,15 +121,15 @@ EndSection
 > #1e1e1e
 
 # vim
-- macro recording 
+- macro recording
   - qd 	start recording to register d, or any
   - ... 	your complex series of commands
   - q 	stop recording
   - @d 	execute your macro at reg d
-  - @@ 	execute your macro again 
+  - @@ 	execute your macro again
   - #@d to execute number of times
-- `set wildignore+=**/node_modules/**` ignore files or folders 
-- `:w !sudo tee "%"` root priviledge for saving doc in vim 
+- `set wildignore+=**/node_modules/**` ignore files or folders
+- `:w !sudo tee "%"` root priviledge for saving doc in vim
 - `:5,17s/^/#/` comment line 5-17
 - `:%s/^/#/` comment all lines
 
@@ -151,7 +155,7 @@ EndSection
   - RE remote master to be merged
   - BA common ancestor of remote and local changes.
 - :diffupdate - re-scan the files for differences
-  - choose which version you want to keep with :diffget //2 or :diffget //3 
+  - choose which version you want to keep with :diffget //2 or :diffget //3
   - the //2 and //3 are unique identifiers for the target/master copy and the merge/branch copy file names
 - If you were trying to do a git pull when you ran into merge conflicts, type `git rebase –continue`
 
@@ -161,7 +165,7 @@ YwrZSNH35j164ns9pI
 URL: *.example.com/*
 Username: myuser@example.com
 Secret Question 1: secret question here
-Phone Support PIN #: 00000 
+Phone Support PIN #: 00000
 ```
 
 # mutt-wizard

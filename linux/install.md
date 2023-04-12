@@ -11,7 +11,7 @@
 fd base-devel git meld neovim firefox mpv w3m vifm youtube-dl feh stow
 alacritty chromium vscodium sxiv gdb vimb ueberzug ytfzf xclip lynx 
 neomutt font-manager lxappearance cups nc zathura(with poppler) unzip powertop 
-shotgun tig pass pass-otp zbar syncthing
+shotgun tig pass pass-otp zbar syncthing xdotool ntfs-3g typst
 
 - lapce: rust based code editor
 
@@ -21,6 +21,7 @@ shotgun tig pass pass-otp zbar syncthing
 - simple-mtpfs-git
 - obinskit
 - brother-mfc-l2700dw
+- 7-zip-full (7z)
 
 # cargo
 powerline-rs du-dust racer skim starship exa bat  diskonaut paru
