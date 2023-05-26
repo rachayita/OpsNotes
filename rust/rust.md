@@ -8,20 +8,19 @@
   - as reading data from file or socket yields a stream of u8 values
 - only  ASCII characters may appear in byte literals
   - since ASCII code for A is 65, literals b'A' and 65u8 are exactly equivalent
-- `assert!` terminates program with a helpful message
-  - including the source location of the failing check
-  - this kind of abrupt termination is called a panic
-- just like vectors, hash maps store their data on the heap
-- can implement trait on type only if either the trait or the type is local to our crate
-  - This restriction is part of a property of programs called coherence
-    - more specifically the orphan rule, so named because the parent type is not present
-- "associated methods" do not have self as a parameter
+- panic: abrupt termination
+- `assert!` panics with a helpful message and source location of the failing check
+- vectors and hash maps store their data on heap
+- coherence:
+  - can implement trait on type only if either trait or type is local to our crate
+  - called orphan rule, so named because the parent type is not present
+- "associated methods" do not have `self` as a parameter
   - they are used for creating new instance of struct
 - cannot call default implementation from overriding implementation of that same method
 - char type is unicode scalar value
 - rust doesn’t have reflection capabilities
   - so it can’t look up the type’s name at runtime
-- If all the fields of struct are themselves `Copy`
+- if all the fields of struct are themselves `Copy`
   - make type `Copy` by placing attribute `#[derive(Copy, Clone)]` above definition
 - `Copy` types are very limited in which types they can contain
 - whereas non-Copy types can use heap allocation and own other sorts of resources
@@ -51,13 +50,10 @@
 - `?` can only be used in functions that have a `Result` return type
 - Only calls through `&mut Write` incur overhead of a virtual method call (Traits)
 - str are compared by their byte values
-
 - `{}` is Display format specifier, works for things that has Display trait
 - `{:?}` is Debug format specifier works for things that has Debug trait
 - `{:#?}` for pretty-print
 - `=` stores the value of rhs expression in the "place" named by lhs
-
-
 - when you see expected type `()` in error msg, look for missing semicolon first
 - all blocks of `if` and `match` expression must produce values of same type
 - blocks are also expressions, mean they evaluate to a value
@@ -76,6 +72,7 @@
 ``` rust
 use std::prelude::v1::*;
 ```
+- start test names with “should”
 
 ## `!` never type
 - ! is empty type or never type because it has no value
@@ -225,84 +222,6 @@ let s2 = struct2 {
     pieces[i] // array element
 ```
 -  Each crate is a rust project
-
-## cargo
-- when compiling libraries, cargo uses `--crate-type lib` option
-  - which tells rustc not to look for main() but instead produce an .rlib file
-- `cargo build --release` produces optimized build
-- release builds run faster, but takes longer to compile
-  - they don't check for integer overflow
-  - skip `debug_assert!()`
-  - stack traces they generate are less reliable
-
-| command line          | cargo.toml section |
-| ----                  | ----               |
-| cargo build           | [profile.debug]    |
-| cargo build --release | [profile.release]  |
-| cargo test            | [profile.test]     |
-|                       |                    |
-
-``` toml
-[profile.release]
-debug = true  #enable debug symbols in release builds
-```
-- the debug setting controls -g option to rustc
-- `cargo test math` runs all tests that contain math somewhere in their name
-- `cargo test` - to run all test
-- `cargo test --doc` to only run documentation test
-- add a `rust-toolchain.toml` file in that project with:
-
-``` toml
-[toolchain]
-channel = "nightly"
-```
-  - or `rustup override set nightly` command for particular project dir
--
-``` Cargo.toml
-[package]
-name = "fun_game" # for crate
-version = "0.1.0"
-edition = "2022"
-description = "A fun game where you guess what number the computer has chosen."
-license = "MIT OR Apache-2.0"
-
-[dependencies]
-add_one = { path = "../crate1" }
-```
-
-- at workspace level
-  - has only one `Cargo.lock` file for whole project rather than having in each crate dir
-  - donot have a `[package]` section in Cargo.toml
-``` Cargo.toml
-[workspace]
-members = [
-    "crate1",
-    "crate2",
-    "fun_game",
-]
-```
-- workspace structure
-```
-├── Cargo.lock
-├── Cargo.toml
-├── crate1
-│   ├── Cargo.toml
-│   └── src
-│       └── lib.rs
-├── crate2
-│   ├── Cargo.toml
-│   └── src
-│       └── main.rs
-└── target
-```
-
-## doc
-- `cargo doc` to build documentation in target/doc
-- `cargo doc --open` creates and open doc
-- `cargo test --doc` to only run documentation test
-- `///` generate library doc for following item
-- `//!` generate library doc for enclosing item
-- `src/lib.rs` file is crate root
 
 ## modules
 - modules are namespaces
@@ -837,13 +756,9 @@ let Some(x) = some_option_value;
 // refutable pattern
 let x = 4;
 ```
-- if let and while let are both refultable and irrefutable
+- if let and while let are both refutable and irrefutable
 - gives warning if it doesn’t make sense to use if let with an irrefutable pattern
   - ex: if let x = 5 { ... };
-
-## test
-- `cargo test -- --nocapture` to enable print statement
-- start test names with “should”
 
 ## std::marker::PhantomData<T> and Zero Sized Type
 - where T: ?Sized
@@ -980,14 +895,90 @@ let x = 4;
   - any type of paranthesis can be used
   - expansion part of rule is called its _transcriber_
 
+## cargo
+- when compiling libraries, cargo uses `--crate-type lib` option
+  - which tells rustc not to look for main() but instead produce an .rlib file
+- `cargo test -- --nocapture` to enable print statement
+- `cargo build --release` produces optimized build
+- release builds run faster, but takes longer to compile
+  - they don't check for integer overflow
+  - skip `debug_assert!()`
+  - stack traces they generate are less reliable
+
+| command line          | cargo.toml section |
+| ----                  | ----               |
+| cargo build           | [profile.debug]    |
+| cargo build --release | [profile.release]  |
+| cargo test            | [profile.test]     |
+|                       |                    |
+
+``` toml
+[profile.release]
+debug = true  #enable debug symbols in release builds
+```
+- the debug setting controls -g option to rustc
+- `cargo test math` runs all tests that contain math somewhere in their name
+- `cargo test` - to run all test
+- `cargo test --doc` to only run documentation test
+- add a `rust-toolchain.toml` file in that project with:
+
+``` toml
+[toolchain]
+channel = "nightly"
+```
+  - or `rustup override set nightly` command for particular project dir
+-
+``` Cargo.toml
+[package]
+name = "fun_game" # for crate
+version = "0.1.0"
+edition = "2022"
+description = "A fun game where you guess what number the computer has chosen."
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+add_one = { path = "../crate1" }
+```
+
+- at workspace level
+  - has only one `Cargo.lock` file for whole project rather than having in each crate dir
+  - donot have a `[package]` section in Cargo.toml
+``` Cargo.toml
+[workspace]
+members = [
+    "crate1",
+    "crate2",
+    "fun_game",
+]
+```
+- workspace structure
+```
+├── Cargo.lock
+├── Cargo.toml
+├── crate1
+│   ├── Cargo.toml
+│   └── src
+│       └── lib.rs
+├── crate2
+│   ├── Cargo.toml
+│   └── src
+│       └── main.rs
+└── target
+```
+
+## doc
+- `cargo doc` to build documentation in target/doc
+- `cargo doc --open` creates and open doc
+- `cargo test --doc` to only run documentation test
+- `///` generate library doc for following item
+- `//!` generate library doc for enclosing item
+- `src/lib.rs` file is crate root
 
 ## miscellaneous
 - reflexive, means `Into<T> for T` is implemented
 
 ## commands
-- rustc --print sysroot
-
-## rustup
+- `rustc --print sysroot`
 - `rustup override set nightly`
 
 ## unreachable!(), unimplemented!()
