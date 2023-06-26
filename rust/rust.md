@@ -4,37 +4,11 @@
   - translation of program to machine code is completed before it begins execution
 -  all Rust functions are thread-safe
   - if program compiles, it is free of data races
-- rust uses the u8 type for byte values
-  - as reading data from file or socket yields a stream of u8 values
 - only  ASCII characters may appear in byte literals
   - since ASCII code for A is 65, literals b'A' and 65u8 are exactly equivalent
 - panic: abrupt termination
 - `assert!` panics with a helpful message and source location of the failing check
 - vectors and hash maps store their data on heap
-- coherence:
-  - can implement trait on type only if either trait or type is local to our crate
-  - called orphan rule, so named because the parent type is not present
-- "associated methods" do not have `self` as a parameter
-  - they are used for creating new instance of struct
-- cannot call default implementation from overriding implementation of that same method
-- char type is unicode scalar value
-- rust doesn’t have reflection capabilities
-  - so it can’t look up the type’s name at runtime
-- if all the fields of struct are themselves `Copy`
-  - make type `Copy` by placing attribute `#[derive(Copy, Clone)]` above definition
-- `Copy` types are very limited in which types they can contain
-- whereas non-Copy types can use heap allocation and own other sorts of resources
-- So making a type Copy represents serious commitment on the part of implementer:
-  - if it’s necessary to change it to non-Copy later,
-    - much of the code that uses it will probably need to be adapted
-- indirection:
-  - instead of storing value directly,
-    - change the datastrucuture to store the value indirectly
-      - by storing a pointer to the value instead
-- The `Rc` and `Arc` types are very similar
-  - only difference is: Arc is safe to share between threads directly
-  - Arc: atomic reference count
-  - plain Rc uses faster non- thread-safe code to update its reference count
 - the distinction between shared and mutable references
   - to enforce multiple readers or single writer rule at compile time
 - as long as there are shared references to a value, not even its owner can modify it
@@ -67,7 +41,7 @@
   - not a crash
   - not undefined behavior
   - more like a RuntimeException in java
-- types are namespaces too, and methods can be called as regular functions
+- methods can be called as regular functions
 - rust inserts this at the beginning of every module
 ``` rust
 use std::prelude::v1::*;
@@ -115,62 +89,6 @@ impl MyTrait for fn() -> ! {}
 - instead use `Iterator::map` by calling `.iter()` or `.into_iter()` on array as
   - [T; N]::map is only necessary if needed a new array of same size in result
   - lazy iterators tend to get optimized very well
-
-## trait object
-- an opaque value of another type that implements a set of traits
-  - the set of traits is made up of:
-    - an "object safe" base trait
-    - plus any number of auto trait
-- its purpose is to allow abstraction across common behaviour
-- we can't add data to a trait object
-- generic method calls are illegal for trait object
-- only one copy is generated for function that takes trait object, resulting in:
-  - less code bloat at the cost of requiring slower virtual function calls
-  - inhibiting any chance of inlining and related optimizations from occuring
-- must be object safe because once you have used a trait object
-  - rust no longer knows the concrete type that's implementing the trait
-- if a trait method returns the concrete `Self` type
-  - but a trait object forgets the exact type that `Self` is
-    - there is no way the method can use the original concrete type
-- trait objects are right choice when needed collection of mixed type values, all together
-- Possible reason to use trait objects is to reduce the total amount of compiled code
-  - may compile generic function many times, once for each type it’s used with
-- generics have two important advantages over trait objects:
-  1. speed: rust can evaluate it at compile time, so that there’s no runtime cost at all
-    - rust never knows what type of value a trait object points to untill run time
-      - if you pass a Sink,
-        - overhead of calling virtual methods and checking for errors still applies
-  2. not every trait can support trait objects
-    - static methods that work only with generics
-      - they rule out trait objects entirely
-    - trait that uses `Self` type is incompatible with trait objects
-- with trait objects, type info is lost, needed to type-check your program
-- a trait object points to both
-  - an instance of a type implementing our specified trait
-  - as well as a table used to lookup trait methods on that type at runtime
-- we create a trait object by specifying some sort of pointer
-  - such as & reference or Box<T> smart poiner
-  - then the `dyn` keyword, and then specifying the relevent trait
-- rust doesn't have inheritance but bounds
-- `Trait: Sized`: only be implemented for type that already implements `Sized`
-- `fn method(&self) where Self: Sized`:
-  - only types that implements `Sized` can implement this method
-- `dyn` is a prefix of a trait object's type
-  - used to highlight calls to methods on the associated trait are dynamically dispatched
-  - to use the trait this way, it must be 'object safe'
-- unlike generic params or `impl Trait`, compiler doesnt know concrete type being passed
-  - ie: the type has been erased
-- `dyn Trait` reference contains two pointers
-  - one pointer goes to the data(eg. instance of struct)
-  - another poiner goes to a map of method call names to a function pointers
-    - known as virtual method table or vtable
-  - at runtime, when a method needs to be called on the `dyn Trait`
-    - the vtable is consulted to get the function pointer
-    - and then that function pointer is called
-    - it has additional runtime cost
-    - also, method cannot be inlined by compiler
-- `dyn Trait` produce smaller code than `impl Trait` / generic parameters
-  - as the method won't be duplicated for each concrete type
 
 ## struct
 ``` rust
@@ -500,9 +418,59 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
   - if we want the Newtype to have every method the inner type has:
     - implementing `Deref` on Wrapper to return the inner type would be a solution
 
+## types
+- types are namespaces too
+- rust compiler gives very few guarantees about how it lays out types
+- rust provides a `repr` attribute for type definition
+  - it gives in-memory representation for that type
+  - helps writing rust code which interfaces with other languages
+    - by using foreign-function interface
+  - useful in unsafe context with raw pointers
+  - useful to cast between two different types with same fields
+  - eg: `repr(C)` lays out c/c++ compatible types
+  - eg: `repr(transparent)`
+    - used on types:
+      - with single field
+      - which guarantees same layout of inner and outer type
+    - without which compiler cannot guarantee same layout
+    - handy with **newtype** pattern for struct A and struct New(A)
+      - to operate on its in-memory representation as if they were same
+  - eg: `rust(Rust)` has lesser restrictions with no strict ordering of declared fields
+    - it has deterministic field oredering
+    - different types with same fields, types and ordering may not have same layout
+  - eg: `#[repr(packed)]` for no padding in-memory representation
+    - used for less memory available
+    - used for low bandwidth
+  - eg: `#[repr(align(n))]` to give field or type a larger alignment than required
+- rust uses the u8 type for byte values
+  - as reading data from file or socket yields a stream of u8 values
+- **coherence**:
+  - can implement trait on type only if either trait or type is local to our crate
+  - called **orphan rule**, so named because the parent type is not present
+- "associated methods" do not have `self` as a parameter
+  - they are used for creating new instance of struct
+- cannot call default implementation from overriding implementation of that same method
+- char type is unicode scalar value
+- rust doesn’t have reflection capabilities
+  - so it can’t look up the type’s name at runtime
+- if all the fields of struct are themselves `Copy`
+  - make type `Copy` by placing attribute `#[derive(Copy, Clone)]` above definition
+- `Copy` types are very limited in which types they can contain
+- non-Copy types can use heap allocation and own other sorts of resources
+- So making a type Copy represents serious commitment on the part of implementer:
+  - if it’s necessary to change it to non-Copy later,
+    - much of the code that uses it will probably need to be adapted
+- indirection:
+  - instead of storing value directly,
+    - change the datastrucuture to store the value indirectly
+      - by storing a pointer to the value instead
+- `Rc` and `Arc`(Atomic Reference Count) types are very similar
+  - only difference is: Arc is safe to share between threads directly
+  - plain Rc uses faster non- thread-safe code to update its reference count
+
 ## dynamically sized type (DST) or unsized type
-- ex: str: we can't know how long the string is untill runtime, means:
-  - can't crate a variable of type str nor can take an argument of type str
+- ex: str: we can't know how long the string is untill runtime
+  - means can't create a variable of type str nor can take an argument of type str
 - str and [T] types denote sets of values of varying sizes, they are unsized types
 - we must always put values of dynamically sized types behind the pointer of some kind
 - every trait is a DST we can refer to by using the name of the trait
@@ -512,14 +480,14 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - mutable slice &mut [T] lets you read and modify elements, but can’t be shared
   - a shared slice &[T] lets share access among several readers, but not modify elements
 - `Sized` trait to determine weather or not a type's size is known at compile time
-  - `Sized` is automatically implemented for everything whose size is known at compile time
+  - `Sized` is automatically implemented for whose size is known at compile time
   - rust implicitly adds a bound on  sized trait to every generic function
   - All type parameters have an implicit bound of Sized
   - trait objects and slices are unsized
     - example: `dyn Iterator` or `[u8]`
   - special syntax `?Sized` can be used to remove this bound if it’s not appropriate.
   - The one exception is implicit `Self` type of a trait
-  - trait doesnot have an implicit `Sized` bound as this is incompatible with trait objects
+  - trait doesnot have implicit `Sized` bound as this is incompatible with trait objects
   - trait need to work with all possible implementators, and thus could be any size
   - rust let you bind `Sized` to a trait
     - won't able to use it to form a trait object later
@@ -560,6 +528,62 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
           - results in increased compile time with large machine code
             - cpu's instruction cache becomes less effective bcoz of multiple code copies
   - `Box` and `Arc` supports storing fat pointers
+
+## trait object
+- an opaque value of another type that implements a set of traits
+  - the set of traits is made up of:
+    - an "object safe" base trait
+    - plus any number of auto trait
+- its purpose is to allow abstraction across common behaviour
+- we can't add data to a trait object
+- generic method calls are illegal for trait object
+- only one copy is generated for function that takes trait object, resulting in:
+  - less code bloat at the cost of requiring slower virtual function calls
+  - inhibiting any chance of inlining and related optimizations from occuring
+- must be object safe because once you have used a trait object
+  - rust no longer knows the concrete type that's implementing the trait
+- if a trait method returns the concrete `Self` type
+  - but a trait object forgets the exact type that `Self` is
+    - there is no way the method can use the original concrete type
+- trait objects are right choice when needed collection of mixed type values, all together
+- Possible reason to use trait objects is to reduce the total amount of compiled code
+  - may compile generic function many times, once for each type it’s used with
+- generics have two important advantages over trait objects:
+  1. speed: rust can evaluate it at compile time, so that there’s no runtime cost at all
+    - rust never knows what type of value a trait object points to untill run time
+      - if you pass a Sink,
+        - overhead of calling virtual methods and checking for errors still applies
+  2. not every trait can support trait objects
+    - static methods that work only with generics
+      - they rule out trait objects entirely
+    - trait that uses `Self` type is incompatible with trait objects
+- with trait objects, type info is lost, needed to type-check your program
+- a trait object points to both
+  - an instance of a type implementing our specified trait
+  - as well as a table used to lookup trait methods on that type at runtime
+- we create a trait object by specifying some sort of pointer
+  - such as & reference or Box<T> smart poiner
+  - then the `dyn` keyword, and then specifying the relevent trait
+- rust doesn't have inheritance but bounds
+- `Trait: Sized`: only be implemented for type that already implements `Sized`
+- `fn method(&self) where Self: Sized`:
+  - only types that implements `Sized` can implement this method
+- `dyn` is a prefix of a trait object's type
+  - used to highlight calls to methods on the associated trait are dynamically dispatched
+  - to use the trait this way, it must be 'object safe'
+- unlike generic params or `impl Trait`, compiler doesnt know concrete type being passed
+  - ie: the type has been erased
+- `dyn Trait` reference contains two pointers
+  - one pointer goes to the data(eg. instance of struct)
+  - another poiner goes to a map of method call names to a function pointers
+    - known as virtual method table or vtable
+  - at runtime, when a method needs to be called on the `dyn Trait`
+    - the vtable is consulted to get the function pointer
+    - and then that function pointer is called
+    - it has additional runtime cost
+    - also, method cannot be inlined by compiler
+- `dyn Trait` produce smaller code than `impl Trait` / generic parameters
+  - as the method won't be duplicated for each concrete type
 
 ## std::cell::Cell
 - if we can't get reference to a value then mutating it is f
@@ -926,8 +950,8 @@ debug = true  #enable debug symbols in release builds
 [toolchain]
 channel = "nightly"
 ```
-  - or `rustup override set nightly` command for particular project dir
--
+- or `rustup override set nightly` command for particular project dir
+
 ``` Cargo.toml
 [package]
 name = "fun_game" # for crate
