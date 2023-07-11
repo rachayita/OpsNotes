@@ -48,33 +48,6 @@ use std::prelude::v1::*;
 ```
 - start test names with “should”
 
-## `!` never type
-- ! is empty type or never type because it has no value
-- expressions that don’t finish normally are assigned the special type !
-  - they’re exempt from the rules about types having to match
-- expressions of type ! can be coerced into any other type
-- fn exit(code: i32) -> !
-    The ! means that exit() never returns. It’s a divergent function.
-- `fn exit(code: i32) -> !`
-  - ! means that exit() never returns
-  - it’s a "divergent function"
-- `continue` has a ! type
-- `panic!()` has a ! type
-- `loop` has a ! type since the loop never ends
-- when `!` is stabilized, plan is to make `Infallible` a type alias to it
-
-```rust
-pub type Infallible = !;
-```
-
-- there is one case where `!` syntax can be used before `!` is stabilized
-  - in the position of a function’s return type
-
-```rust
-trait MyTrait {}
-impl MyTrait for fn() -> ! {}
-```
-
 ## memory model
 - when value is assigned to a variable, that value is from then on named by that variable
 - when a variable is later accessed
@@ -100,47 +73,6 @@ let s2 = struct2 {
 };
 ```
 
-## object safety
-- a trait object can only be constructed out of traits that satisfy certain restrictions
-  - which are collectively called 'object safety'
-- object safe traits can be the base trait of a trait object
-  - a trait is object safe if it has the following qualities (defined in RFC 255):
-    - It must not require Self: Sized
-    - All associated functions must either have a where Self: Sized bound, or
-        - Not have any type parameters (although lifetime parameters are allowed), and
-        - Be a method that does not use Self except in the type of the receiver.
-    - It must not have any associated constants.
-    - All supertraits must also be object safe.
-- When there isn't `Self: Sized` bound on method,
-  - type of a method receiver must be one of the types:
-    - `&Self`
-    - `&mut Self`
-    - `Box<Self>`
-    - `Rc<Self>`
-    - `Arc<Self>`
-    - `Pin<P>` where P is one of the types above
-- when you implement a trait, either the trait or type must be new in the current crate
-  - this is called the coherence rule
-  - it helps rust ensure that trait implementations are unique.
-  - code can’t impl Write for u8, because both are defined in the standard library
-  - if allowed:
-    - there could be multiple implementations of Write for u8, in different crates
-    - with no reasonable way to decide which implementation to use for given method call
-- can borrow a reference to a value
-- references are nonowning pointers, with limited lifetimes
-- like C/C++, rust puts plain string literals like "udon" in read-only memory
-  - so for a clearer comparison with the C++ and Python examples
-    - we call to_string here to get heap-allocated String values
-- the value to the left of the dot or brackets[] is automatically dereferenced
-- expressions like these three are called lvalues
-  - because they can appear on the left side of an assignment:
-```  rust
-    game.black_pawns // struct field
-    coords.1 // tuple element
-    pieces[i] // array element
-```
--  Each crate is a rust project
-
 ## modules
 - modules are namespaces
   - they’re containers for:
@@ -160,10 +92,10 @@ let s2 = struct2 {
   - `use super::*;` only imports items that are marked pub
 
 ## TODO
-- methods are also known as associated functions,
+- methods are also known as **associated functions**,
   - since they’re associated with a specific type
-  - opposite of an associated function is a free function
-    - one that is not defined as an impl block’s item
+- opposite of an associated function is a **free function**
+  - one that is not defined as an impl block’s item
 - ref is checked at compile time while RefCell at runtime(panic)
 - the trait itself must be in scope, otherwise, all its methods are hidden
 - use statics for larger amounts of data, or borrow a reference to the constant value
@@ -190,21 +122,6 @@ let s2 = struct2 {
   - its capacity, and its length, so Vec<T> is a sized type
 - by default, struct and enum types are not `Copy`,
   - can implement `Copy` on them also
-- rust does deref coercion when it finds types and trait implementations in three cases:
-   * From &T to &U when T: Deref<Target=U>
-   * From &mut T to &mut U when T: DerefMut<Target=U>
-   * From &mut T to &U when T: Deref<Target=U>
-- rust doesn’t try deref coercions to satisfy type variable bounds
-- orphan rule: external traits cannot be implemented on external types
-    * crate A defines a public trait T
-    * crate B defines a public struct S
-    * crate C wants to implement T for S
-- you can implement:
-  - one of your traits on anyone's type
-  - anyone's trait on one of your types
-  - but not a foreign trait on a foreign type
-  - these are called the "orphan rules"
-- current orphan rules prevent this, even though it would be completely coherent
 - only implement `Into` if conversion to a type outside the current crate is required
   - `From` cannot do these type of conversions because of rust's orphaning rules
 - prefer using `Into` over `From` when specifying trait bounds on a generic function
@@ -238,15 +155,15 @@ let s2 = struct2 {
   - value borrowed by a mutable reference is reachable exclusively via that reference
   - across the lifetime of a mutable reference
     - there is no other usable path to its referent, or to any value reachable from there
-  - the only references whose lifetimes may overlap with a mutable reference are:
+  - only references whose lifetimes may overlap with a mutable reference are:
     - those you borrow from the mutable reference itself
 - variables including function arguments are dropped in reverse order
   - nested values are dropped in sourcecode order
-  - the fields of a struct are dropped in declaration order
-  - the fields of the active enum variant are dropped in declaration order
-  - the fields of a tuple are dropped in order
-  - the elements of an array or owned slice are dropped from the first element to the last
-  - the variables that a closure captures by move are dropped in an unspecified order
+  - fields of a struct are dropped in declaration order
+  - fields of the active enum variant are dropped in declaration order
+  - fields of a tuple are dropped in order
+  - elements of an array or owned slice are dropped from the first element to the last
+  - variables that a closure captures by move are dropped in an unspecified order
   - trait objects run the destructor of the underlying type
   - other types don't result in any further drops
 
@@ -468,6 +385,33 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
   - only difference is: Arc is safe to share between threads directly
   - plain Rc uses faster non- thread-safe code to update its reference count
 
+## `!` never type
+- ! is empty type or never type because it has no value
+- expressions that don’t finish normally are assigned the special type !
+  - they’re exempt from the rules about types having to match
+- expressions of type ! can be coerced into any other type
+- fn exit(code: i32) -> !
+    The ! means that exit() never returns. It’s a divergent function.
+- `fn exit(code: i32) -> !`
+  - ! means that exit() never returns
+  - it’s a "divergent function"
+- `continue` has a ! type
+- `panic!()` has a ! type
+- `loop` has a ! type since the loop never ends
+- when `!` is stabilized, plan is to make `Infallible` a type alias to it
+
+```rust
+pub type Infallible = !;
+```
+
+- there is one case where `!` syntax can be used before `!` is stabilized
+  - in the position of a function’s return type
+
+```rust
+trait MyTrait {}
+impl MyTrait for fn() -> ! {}
+```
+
 ## dynamically sized type (DST) or unsized type
 - ex: str: we can't know how long the string is untill runtime
   - means can't create a variable of type str nor can take an argument of type str
@@ -514,26 +458,84 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
   ```
   - compiler puts the `?Sized` trait objects and slices behind fat pointers automatically
     - fat pointer is `Sized`
+      - twice the size of a usize word on target platform
+        - one for holding the pointer
+        - one for holding extra information needed to "complete" the type
     - includes an extra word-sized field that gives additional info about pointer
       - needed by compiler to generate the code
       - for slices, the extra info is the length of the slice
       - for traits:
-        - separate implementation copy is generated for each type that uses generic code
-          - known as "static dispatch"
+        1. separate implementation copy is generated for each type that uses generic code
+          - extra info is that implementation address, could be multiple addresses
+          - known as **static dispatch**
+            - since for any copy, the address we are dispathing is known statically
           - happens at compile time
           - bcoz the cpu needs address where to jump to and continue execution
           - code transformed as non generic before optimizations
             - code for each type is optimized separately
-          - this process of going from generic to non-generic types is "monomorphization"
+          - this going from generic to non-generic types is **monomorphization**
           - results in increased compile time with large machine code
-            - cpu's instruction cache becomes less effective bcoz of multiple code copies
+            - cpu's instruction cache becomes less effective
+              - bcoz it needs to hold multiple copies of same instructions
+                - as instructions arent shared between different instatiation
+        2. **dynamic dispatch** is to call trait method on generic, unknowing actual type
+          - caller tells to replace impl TraitA with &dyn TraitA
+            - to make dyn TraitA `Sized`, use &dyn TraitA
+            - &mut, Box and Arc can also be used for dynamic dispatch
+          - caller gives address of the TraitA and of its called method
+            - its a pointer to a memeory chunk called virtual method table or **vtable**
+            - **vtable** holds address of all trait methods for given type
+              - info about type's layout and alignment
+              - fat pointer's extra word holds pointer to the vtable
+          - allows to use same function body regardless of what type is called
+      - use static dipatch for library and dynamic dispatch for binary
   - `Box` and `Arc` supports storing fat pointers
+
+## trait
+- rust does deref coercion when it finds types and trait implementations in three cases:
+   * From &T to &U when T: Deref<Target=U>
+   * From &mut T to &mut U when T: DerefMut<Target=U>
+   * From &mut T to &U when T: Deref<Target=U>
+- rust doesn’t try deref coercions to satisfy type variable bounds
+- orphan rule: external traits cannot be implemented on external types
+    * crate A defines a public trait T
+    * crate B defines a public struct S
+    * crate C wants to implement T for S
+- you can implement:
+  - one of your traits on anyone's type
+  - anyone's trait on one of your types
+  - but not a foreign trait on a foreign type
+  - these are called the **orphan rules**
+- upstream refers to something your code depends on
+- downstream refers to something that depends on your code
+- **blanket implementation**
+  - impl<T> MyTrait for T where T: and so on
+  - crate that defines a trait is allowed to write it
+  - adding blanket implementation to an existing trait is considered a breaking change
+- **fundamental types**
+  - allow anyone to implement traits on them, even if violates orphan rule
+  - bypasses orphan rule
+  - are effectively erased before orphan rule is checked
+  - include &, &mut and Box
+  - marked with attribute `#[fundamental]`
+  - adding blanket implementation over a fundamental type is considered a breaking change
+  - eg: impl IntoIterator for &MyType
+- **covered implementations**
+  - allow implementing a foreign trait for a foreign type
+  - eg: impl From<MyType> for Vec<i32>
 
 ## trait object
 - an opaque value of another type that implements a set of traits
   - the set of traits is made up of:
-    - an "object safe" base trait
+    - an "object-safe" base trait
     - plus any number of auto trait
+- it is combination of a type that implements a trait and its vtable   ?
+- object-safe:
+  - 2 properties for traits to satisfy in order them to be object-safe:
+    1. return type isnt `Self`
+    2. no generic type parameters
+  - size and shape of arguments and return value should only depend on the bare trait
+    - not on the instance(Self) or any type arguments (forgotten by runtime)
 - its purpose is to allow abstraction across common behaviour
 - we can't add data to a trait object
 - generic method calls are illegal for trait object
@@ -545,45 +547,103 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - if a trait method returns the concrete `Self` type
   - but a trait object forgets the exact type that `Self` is
     - there is no way the method can use the original concrete type
-- trait objects are right choice when needed collection of mixed type values, all together
-- Possible reason to use trait objects is to reduce the total amount of compiled code
-  - may compile generic function many times, once for each type it’s used with
+- right choice when needed collection of mixed type values, all together
+- possible reason to use is to reduce the total amount of compiled code
+  - may compile generic function many times, once for each type its used with
 - generics have two important advantages over trait objects:
   1. speed: rust can evaluate it at compile time, so that there’s no runtime cost at all
     - rust never knows what type of value a trait object points to untill run time
       - if you pass a Sink,
         - overhead of calling virtual methods and checking for errors still applies
-  2. not every trait can support trait objects
+  2. not every trait can support trait objects, trait example: `Clone`, `Extend`
     - static methods that work only with generics
-      - they rule out trait objects entirely
     - trait that uses `Self` type is incompatible with trait objects
-- with trait objects, type info is lost, needed to type-check your program
+- type info is lost, needed to type-check your program
 - a trait object points to both
   - an instance of a type implementing our specified trait
-  - as well as a table used to lookup trait methods on that type at runtime
+  - **vtable**: a table used to lookup trait methods on that type at runtime
 - we create a trait object by specifying some sort of pointer
   - such as & reference or Box<T> smart poiner
   - then the `dyn` keyword, and then specifying the relevent trait
-- rust doesn't have inheritance but bounds
+- rust doesnt have inheritance but bounds
 - `Trait: Sized`: only be implemented for type that already implements `Sized`
 - `fn method(&self) where Self: Sized`:
   - only types that implements `Sized` can implement this method
 - `dyn` is a prefix of a trait object's type
-  - used to highlight calls to methods on the associated trait are dynamically dispatched
-  - to use the trait this way, it must be 'object safe'
+  - highlights calls to methods on the associated trait that are dynamically dispatched
 - unlike generic params or `impl Trait`, compiler doesnt know concrete type being passed
   - ie: the type has been erased
-- `dyn Trait` reference contains two pointers
+- `dyn Trait` reference contains two pointers called fat pointer
   - one pointer goes to the data(eg. instance of struct)
-  - another poiner goes to a map of method call names to a function pointers
+  - another pointer points to a map of method call names to a function pointers
     - known as virtual method table or vtable
   - at runtime, when a method needs to be called on the `dyn Trait`
     - the vtable is consulted to get the function pointer
     - and then that function pointer is called
-    - it has additional runtime cost
-    - also, method cannot be inlined by compiler
+    - has additional runtime cost
+    - method cannot be inlined by compiler
 - `dyn Trait` produce smaller code than `impl Trait` / generic parameters
   - as the method won't be duplicated for each concrete type
+
+## object safety
+- a trait object can only be constructed out of traits that satisfy certain restrictions
+  - which are collectively called 'object safety'
+- object safe traits can be the base trait of a trait object
+  - a trait is object safe if it has the following qualities (defined in RFC 255):
+    - It must not require Self: Sized
+    - All associated functions must either have a where Self: Sized bound, or
+        - Not have any type parameters (although lifetime parameters are allowed), and
+        - Be a method that does not use Self except in the type of the receiver.
+    - It must not have any associated constants.
+    - All supertraits must also be object safe.
+- When there isn't `Self: Sized` bound on method,
+  - type of a method receiver must be one of the types:
+    - `&Self`
+    - `&mut Self`
+    - `Box<Self>`
+    - `Rc<Self>`
+    - `Arc<Self>`
+    - `Pin<P>` where P is one of the types above
+- when you implement a trait, either the trait or type must be new in the current crate
+  - this is called the coherence rule
+  - it helps rust ensure that trait implementations are unique.
+  - code can’t impl Write for u8, because both are defined in the standard library
+  - if allowed:
+    - there could be multiple implementations of Write for u8, in different crates
+    - with no reasonable way to decide which implementation to use for given method call
+- can borrow a reference to a value
+- references are nonowning pointers, with limited lifetimes
+- like C/C++, rust puts plain string literals like "udon" in read-only memory
+  - so for a clearer comparison with the C++ and Python examples
+    - we call to_string here to get heap-allocated String values
+- the value to the left of the dot or brackets[] is automatically dereferenced
+- expressions like these three are called lvalues
+  - because they can appear on the left side of an assignment:
+```  rust
+    game.black_pawns // struct field
+    coords.1 // tuple element
+    pieces[i] // array element
+```
+-  Each crate is a rust project
+
+## generic trait
+1. with generic type parameters
+  - ex: `trait Foo<T>`
+  - change must be updated to all users
+  - hard to maintain
+  - multiple implementations may exist
+2. with associated types
+  - ex: `trait Foo { type Bar; }`
+  - easier to work with
+  - compiler need only the type that implements the trait
+  - allow users to add further associated types without affecting the users
+  - will not allow multiple implementations
+  - advice: use whenever you can
+  - cannot implement `Deref` against multiple target type
+  - cannot implement `Iterator` with multiple different `Item` types
+- rule of thumb:
+  1. use associated type for only one implementation of trait for given type
+  2. else use generic type parameters
 
 ## std::cell::Cell
 - if we can't get reference to a value then mutating it is f
