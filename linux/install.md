@@ -1,6 +1,5 @@
-=========================================================================================
-# Inatall
-=========================================================================================
+# Install
+
 
 ## git
 - https://github.com/junegunn/vim-plug
@@ -12,33 +11,42 @@
 - https://github.com/cirala/vifmimg fir vifm image preview
 
 ## pacman
-fd base-devel git meld neovim firefox mpv vifm youtube-dl feh stow alacritty \
-chromium sxiv gdb vimb ueberzug xclip neomutt font-manager syncthing  gufw \
-lxappearance cups nc zathura unzip shotgun zbar tig pass  xdotool  ntfs-3g typst \
-skim starship exa bat pass-otp
-
+```shell
+sudo pacman -S fd base-devel git meld neovim firefox mpv vifm youtube-dl feh stow \
+alacritty chromium sxiv gdb vimb ueberzug xclip neomutt font-manager syncthing  gufw \
+lxappearance cups netcat zathura unzip shotgun zbar tig pass  xdotool  ntfs-3g typst \
+skim starship exa bat pass-otp blueman zathura-pdf-poppler system-config-printer jless \
+tcpdump, hyperfine
+```
 - lapce: rust based code editor
 
 ## paru
+- paru-bin
 - stint: cmd line color picker
 - mutt-wizard-git
 - simple-mtpfs-git
 - obinskit
 - brother-mfc-l2700dw
 - 7-zip-full (7z)
-- vscodium 
+- vscodium
+- dmenufm
 
 ## cargo
-powerline-rs du-dust racer  diskonaut paru
-nethoscope broot hmm fd-find
+powerline-rs du-dust racer  diskonaut paru nethoscope broot hmm fd-find
 
 ## ~/.local/share/fonts
-> `fc-cache -vf`
+> ``` fc-cache -vf ```
 - [JetBrains Mono](https://www.jetbrains.com/lp/mono/)
 - [Font Awesome](https://fontawesome.com/download)
 - [iosevka](https://typeof.net/Iosevka/)
-- iosevka nerd font: fonts for starship
+- [iosevka nerd font: fonts for starship](https://www.nerdfonts.com/font-downloads)
 - Bizcat:  an 8x16 bitmap font
+
+## [PlugInstall](https://github.com/junegunn/vim-plug)
+```shell
+sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim \
+--create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+```
 
 ## firewall
 - ufw/gufw
@@ -50,8 +58,16 @@ nethoscope broot hmm fd-find
 - ublock origin
 
 ## settings
+
+### bluetooth settings
 - [blutooth auto power on after boot/resume/before login](https://wiki.archlinux.org/title/Bluetooth)
-- download rust-analyzer in ~/.local/bin
+- ``` /etc/bluetooth/main.conf ```
+```
+[Policy]
+AutoEnable=true
+```
+### [rust analyzer](https://github.com/rust-lang/rust-analyzer/releases)
+- download rust-analyzer in ~/.local/bin and make it executable
 
 ## optinal
 - [colorgrab](https://github.com/nielssp/colorgrab)
@@ -62,13 +78,11 @@ nethoscope broot hmm fd-find
 - [cast yt to smart tv](https://github.com/MarcoLucidi01/ytcast)
 - dunst: light weight notification daemon
 - [vim todo plugin](https://github.com/dewyze/vim-tada)
-- qemu, [obsidian](obsidian)
+- qemu, obsidian
 - [spacer](https://github.com/samwho/spacer): cli to insert spacers when cmd output stops
 
 
-=========================================================================================
 # NOTES
-=========================================================================================
 
 
 ## rust
@@ -88,8 +102,9 @@ nethoscope broot hmm fd-find
 ## set screen resolution
 - arandr: graphical resolution
 - > `xrandr` shows current screen resolution
-- > `xrandr -q`
-- > `xrandr -d :0 --output <OUTPUT> --mode 1360x768`
+- > ``` xrandr -q ```
+- > ``` xrandr -d :0 --output <OUTPUT> --mode 1360x768 ```
+-> or ``` xrandr -s 1360x768 ```
 
 ## arch graphical driver
 > xf86-video-vmware
@@ -263,4 +278,15 @@ IdentityFile "PATH TO id_rsa FILE"
 ```
 ## change pinentry permanently
 - append the following to your ~/.gnupg/gpg-agent.conf:
-`pinentry-program /usr/bin/pinentry-tty`
+```
+pinentry-program /usr/bin/pinentry-tty
+```
+## [autologin](https://wiki.archlinux.org/title/Getty#Prompt_only_the_password_for_a_default_user_in_virtual_console_login)
+/etc/systemd/system/getty@tty1.service.d/autologin.conf
+- change it your username
+```
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin username %I $TERM
+```
+

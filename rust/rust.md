@@ -24,11 +24,15 @@
 - `?` can only be used in functions that have a `Result` return type
 - Only calls through `&mut Write` incur overhead of a virtual method call (Traits)
 - str are compared by their byte values
+- `{...}` forms are called *format parameters*
+  - have the form {which:how}, both parts are optional
 - `{}` is Display format specifier, works for things that has Display trait
 - `{:?}` is Debug format specifier works for things that has Debug trait
 - `{:#?}` for pretty-print
+- `{{` or `}}` use it to print `{}`
 - `=` stores the value of rhs expression in the "place" named by lhs
 - when you see expected type `()` in error msg, look for missing semicolon first
+- `Vec` and `HashMap` do not implement `Display` as they lacks human readable form
 - all blocks of `if` and `match` expression must produce values of same type
 - blocks are also expressions, mean they evaluate to a value
 - `::` operates on namespace
@@ -47,6 +51,8 @@
 use std::prelude::v1::*;
 ```
 - start test names with “should”
+- `&mut` means exclusive access
+- `&` means shared access
 
 ## memory model
 - when value is assigned to a variable, that value is from then on named by that variable
@@ -55,6 +61,7 @@ use std::prelude::v1::*;
     - which establishes a dependency relationship between the two accesses
     - you cannot draw lines from variable whose value is uninitialized or has been moved
 - a variable exists only so long as it holds a legal value
+- pushing values on stack is not considered allocating
 
 ## array
 - Rust requires array indices to be usize values.
@@ -130,6 +137,7 @@ let s2 = struct2 {
 - `From` trait is also very useful when performing error handling
 - `From<T>` for U implies `Into<U>` for T
 - `From` is reflexive, which means that `From<T>` for T is implemented
+- given `From` implementation, std lib automatically implements corresponding `Into`
 - fn value is memory address of the function’s machine code,
   - just like a function pointer in c++
 - `parse()` can parse any type that implements the `FromStr` trait
@@ -383,6 +391,8 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
       - by storing a pointer to the value instead
 - `Rc` and `Arc`(Atomic Reference Count) types are very similar
   - only difference is: Arc is safe to share between threads directly
+    - keep the containing variable alive, even if the parent thread bails out early
+    - `clone()` only increases the reference count of `Arc` not the containing variable
   - plain Rc uses faster non- thread-safe code to update its reference count
 
 ## `!` never type
@@ -792,12 +802,15 @@ trait Iterator{
   - `iter()` iterates over &T
   - `iter_mut()` iterates over &mut T
   - `into_iter()` iterates over T
+- **iterator adapter**: functions which take an `Iterator` and return another `Iterator`
+  - they are form of **adapter pattern**
 
 ## closure
 - closures: anonymous function-like construct you can store in a variable
 - it borrows:
   - when rust creates a closure, it can automatically borrow a ref to a captured variable
   - closure refers to a captured variable, so it must have a ref to it
+  - cannot outlive captured reference's lifetime, therefore no gc required
 - types are locked into the closure in first use
   - we get a type error if we try to use a different type with the same closure
 - rust offers two ways for closure to get data from enclosing scopes:
@@ -806,8 +819,8 @@ trait Iterator{
 - moving a copyable type like i32 will be copied instead
 - moving contributes to thread safety as there is no sharing
 - function has types eg: type fn(&City) -> i64
-  - fn(&City) -> bool // fn type (functions only)
-  - Fn(&City) -> bool // Fn trait (both functions and closures)
+  - `fn(&City) -> bool` // fn type (implemented by functions only)
+  - `Fn(&City) -> bool` // Fn trait (implemented by both functions and closures)
     - this trait is automatically implemented by all the functions and closures
   - closure is callable but its not a fn
 - function value is memory address of its machine code, just like function pointer in c++
@@ -818,7 +831,8 @@ trait Iterator{
   - it can inline the code for that closure
     - this makes it ok to use closures in tight loops
     - often the compiler can inline all calls to a closure
-
+    - doesn’t contain a pointer to its code! that’s not necessary
+    - knows which code to run when called
 ``` rust
 // Pseudocode for `Fn`, `FnMut` and `FnOnce` traits with no arguments.
 
@@ -842,7 +856,7 @@ trait FnOnce() -> R {
 - Fn is the family of closures
   - functions that you can call multiple times without restriction
   - this highest category also includes all fn functions
-  - closure that drop values, are not allowed to have Fn
+  - closure that drop values, are not Fn, only FnOnce
 - FnMut: trait of closures that requires mut access to a value
   - but doesn’t drop any values
   - can be called multiple times if the closure itself is declared mut
@@ -856,6 +870,11 @@ trait FnOnce() -> R {
       - it contains borrowed references to variables that are about to go out of scope
         - therefore 'static lifetime is added
   - code that works  with closures usually needs to be generic
+- Clone and Copy closure:
+  - non move
+  - doesnt mutate variables
+  - holds only shared references
+- if everything a move closure captures is Copy, its Copy; if its Clone, its Clone
 
 ## variance
 - fn flips the variance of args
@@ -873,15 +892,21 @@ let x = 4;
 - if let and while let are both refutable and irrefutable
 - gives warning if it doesn’t make sense to use if let with an irrefutable pattern
   - ex: if let x = 5 { ... };
-## Marker traits
+## Marker traits: `std::marker::`
 - indicate property of implementing type
 - no methods or no associated types, just empty traits
 - serve just to tell that particular type can or cannot be used in certain way
-- eg: `Send`, `Sync`, `Copy`, `Sized` in std::marker module
-- except `Copy`, all markers are auto trait 
+- eg: `Send`, `Sync`, `Copy`, `Sized` `Unpin` in std::marker module
+- except `Copy`, all markers are auto trait
 - auto trait are automatically implemented by compiler
   - unless the type contains something that doesnot implement marker trait
 - allow to write bounds that capture semantic requirements not directly expressed in code
+
+## marker types
+- are unit types
+- hold no data and have no methods
+- useful for marking a type as being in particular state
+- to make impossible for a user to misuse an API
 
 ## std::marker::PhantomData<T> and Zero Sized Type
 - where T: ?Sized
@@ -897,16 +922,23 @@ let x = 4;
 
 ## std::marker::Send
 - ownership of values of the type implementing `Send` can be transferred between threads
-- almost every rust type id `Send`
-  - except `Rc<T>`, `Mutex<T>`
+- almost every rust type is `Send`
+  - except `Rc<T>`, `Mutex<T>`, `*mut u8`
+  - `Rc` is neither `Send` nor `Sync`
+    - use mutability in way that isnt thread-safe
 - types composed entirely of types that are `Send` are also `Send`
 
 ## std::marker::Sync
+- types that implement `Sync` are safe to pass by non mutable reference to another thread
+  - they can be shared across threads
+  - safe here means free form data races and undefined behaviour
 - it is safe for type implementing `Sync` to be referenced from multiple threads
 - any type T is `Sync` if &T is `Send`
   - means the reference can be sent safely to another thread
 - types composed entirely of types that are `Sync` are also `Sync`
 - `RefCell<T>`, the family of related `Cell<T>` types are not `Sync`
+- `std::sync::mpsc::Receiver` is `Send` but not `Sync`
+  - it guarantees that receiving end of mpsc channel is used by only one thread at a time
 
 ## std::ptr
 - a null pointer is never valid, not even for accesses of size zero
@@ -938,15 +970,51 @@ let x = 4;
   - [profile.dev]
   - [profile.release]
 
+## char
+- 32 bit holding Unicode point from 0 to 0xd7ff or 0xe000 to 0x10ffff
+- implements `Copy`, `Clone`, `PartialEq`,`Eq`, `PartialOrd`, hashing, formatting etc
+- all ASCII methods are available on `u8` byte type
+```rust
+assert!(32u8.is_ascii_whitespace());
+assert!(b'9'.is_ascii_digit());
+```
+
+## ASCII, Latin-1 and Unicode
+- 0 to 0x7f Unicode and ASCII match(also UTF-8)
+- 0 to 0xff Unicode and ISO/IEC 8859-1(8bit super set of ASCII)
+  - Unicode calls this range of code points the Latin-1 code block
+  - Unicode is superset of Latin-1
+  - for use with western european languages
+- range of bytes holding ASCII text is valid UTF-8
+  - reverse is also true if UTF-8 includes only characters form ASCII
+  - not true for Latin-1
+
+## alloc::string::String
+- represents text using UTF-8
+  - UTF-8 encodes a character as a sequence of one to four bytes
+- implemented as wrapper around `Vec<u8>` ensures wellformed UTF-8
+- shares Vec performance characteristics
+- Use the owned String for building and mutating strings
+- For converting to strings use the `format!` macro
+- for converting from strings use the `FromStr` trait
+- dereferences to `&str`
+- method defined on `str` is directly available on `String`
+
 ## str
 - a UTF-8 string slice
 - a primitive type
 - typically accessed as immutable references: &str
+- `slice.chars()` produce Iterator over its characters
+- if a type implements `Display`, std lib automatically implements `std::str::ToString`
 
-## alloc::string::String
-- Use the owned String for building and mutating strings.
-- For converting to strings use the format! macro
-- for converting from strings use the FromStr trait
+## Mutex
+- dynamically enforces exclusive access statically at compile time
+  - even `std::cell:RefCell` does the same without supporting multiple threads
+  - both are flavous of interior mutability
+
+## async
+- traits doesnt have asynchronous methods
+- only free functions and functions inherent to a specific the can be asynchronous
 
 ## macro
 - generic syntax extension form
@@ -955,6 +1023,11 @@ let x = 4;
   - so you don't get unexpected precedence bugs
 - instead of generating a function call, macros are expanded into source code
 - general mechanism macros are built on is "syntax extensions"
+- macros that are visible in one module are automatically visible in its child modules
+  - use `#[macro_use]` to export macros form a module "upward" to its parent module
+    - eg: `#[macro_use] mod some_macro;`
+  - `#[macro_export]` makes macro automatically `pub`
+    - can be referred to by path,like other items
 - first stage of compilation for a Rust program is tokenization
   - `self` is both an identifier and keyword
   - rustc_lexer emits single character symbols as tokens
@@ -1103,6 +1176,14 @@ members = [
 
 ## commands
 - `rustc --print sysroot`
-- `rustup override set nightly`
+- `rustup override set nightly` for particular project only
+- `rustup toolchain list`
+- `export RUSTFLAGS="-Z macro-backtrace"` for more info while debugging in nightly
+- `cargo build --verbose` to see how cargo is invoking rustc
+- copy rustc commandline and add `-Z unstable-options -- pretty expanded` as options
+  - fully expanded code will be dumped to terminal
+  - works only if code if free of syntax errors
+- `#![feature(log_syntax)]` flag with `log_syntax!()` prints args for macro debugging
+- `trace_macro!(true)` (maybe nightly) tells compiler to log all macro calls
 
-## unreachable!(), unimplemented!()
+## unreachable!(), unimplemented!(), todo!()
