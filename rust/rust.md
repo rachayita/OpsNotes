@@ -522,7 +522,37 @@ impl MyTrait for fn() -> ! {}
   - eg: impl IntoIterator for &MyType
 - **covered implementations**
   - allow implementing a foreign trait for a foreign type
-  - eg: impl From<MyType> for Vec<i32>
+  - eg: `impl From<MyType> for Vec<i32>`
+    - here From and Vec are both foreign, yet there is no danger of violating coherence
+    - bcoz conflicting implementation  could be added only through blanket implementation
+      - in std library
+      - std library cannot otherwise name MyType
+  - orphan rule includes narrow exemption for this
+  - `impl<P1..=Pn> ForeignTrait<T1..=Tn> for T0`
+    - at least one Ti must be local
+    - no T before first such Ti is one of the generic types P1..=Pn
+    - generic params (Ps) are allowed in T0..Ti until covered by some intermediate type
+      - T is covered if it appears  as a type pareameter to some other type like Vec<T>
+      - not if it stands on its own just T or &T
+    ```rust
+    // valid implementations of foreign trait for foreign types
+    impl<T> From<T> for MyType
+    impl<T> From<T> for MyType<T>
+    impl<T> From<MyType> for Vec<T>
+    impl<T> ForeignTrait<MyType, T> for Vec<T>// local type is first and then T
+
+    // invalid implementations of foreign trait for foreign types
+    impl<T> ForeignTrait for T
+    impl<T> From<T> for T
+    impl<T> From<Vec<T>> for T
+    impl<T> From<MyType<T>> for T
+    impl<T> From<T> for Vec<T>
+    impl<T> ForeignTrait<T, MyType> for Vec<T> // local type should come first
+    ```
+  - relaxation of orphan rule complicates the rule
+  - adding new implementation to existing trait is non breaking only if:
+    - it contains atleast one new local type
+    - new local type satisfies the rules for exemption
 
 ## trait object
 - an opaque value of another type that implements a set of traits
@@ -843,6 +873,15 @@ let x = 4;
 - if let and while let are both refutable and irrefutable
 - gives warning if it doesn’t make sense to use if let with an irrefutable pattern
   - ex: if let x = 5 { ... };
+## Marker traits
+- indicate property of implementing type
+- no methods or no associated types, just empty traits
+- serve just to tell that particular type can or cannot be used in certain way
+- eg: `Send`, `Sync`, `Copy`, `Sized` in std::marker module
+- except `Copy`, all markers are auto trait 
+- auto trait are automatically implemented by compiler
+  - unless the type contains something that doesnot implement marker trait
+- allow to write bounds that capture semantic requirements not directly expressed in code
 
 ## std::marker::PhantomData<T> and Zero Sized Type
 - where T: ?Sized
@@ -851,7 +890,8 @@ let x = 4;
   - your type acts as though it stores a value of type T, even though it doesnt
 - if your struct does not own the data of type T:
   - it is better to use a reference type
-  - like `PhantomData<&'a T>` (ideally) or `PhantomData<*const T>` (if no lifetime applies)
+  - like `PhantomData<&'a T>` (ideally)
+  - or `PhantomData<*const T>` (if no lifetime applies)
   - so as not to indicate ownership
 - phantom type parameter: is simply a type parameter which is never used
 
