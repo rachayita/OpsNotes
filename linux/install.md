@@ -80,6 +80,7 @@ AutoEnable=true
 - [vim todo plugin](https://github.com/dewyze/vim-tada)
 - qemu, obsidian
 - [spacer](https://github.com/samwho/spacer): cli to insert spacers when cmd output stops
+- [git + email tools](https://git-send-email.io/#step-1)
 
 
 # NOTES
