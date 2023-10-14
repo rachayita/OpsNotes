@@ -15,8 +15,8 @@
 sudo pacman -S fd base-devel git meld neovim firefox mpv vifm youtube-dl feh stow \
 alacritty chromium sxiv gdb vimb ueberzug xclip neomutt font-manager syncthing  gufw \
 lxappearance cups netcat zathura unzip shotgun zbar tig pass  xdotool  ntfs-3g typst \
-skim starship exa bat pass-otp blueman zathura-pdf-poppler system-config-printer jless \
-tcpdump, hyperfine
+skim starship exa bat pass-otp blueman nss-mdns system-config-printer jless \
+tcpdump hyperfine zathura-pdf-poppler
 ```
 - lapce: rust based code editor
 
@@ -30,6 +30,7 @@ tcpdump, hyperfine
 - 7-zip-full (7z)
 - vscodium
 - dmenufm
+- linux-wifi-hotspot
 
 ## cargo
 powerline-rs du-dust racer  diskonaut paru nethoscope broot hmm fd-find
@@ -50,6 +51,11 @@ sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.
 
 ## firewall
 - ufw/gufw
+
+## printer setup
+- Install nss-mdns using your package manager
+- Start/restart avahi-daemon.service
+- Replace the hosts line in /etc/nsswitch.conf with hosts: mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns
 
 ## browser addon
 - dark reader
