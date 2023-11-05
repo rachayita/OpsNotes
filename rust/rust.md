@@ -142,6 +142,14 @@ let s2 = struct2 {
   - just like a function pointer in c++
 - `parse()` can parse any type that implements the `FromStr` trait
 
+## borrowed type
+-types provide access to the underlying data through references to the type of that data
+ - they are said to be **borrowed as** that type
+ - eg: a Box<T> can be borrowed as T while a String can be borrowed as str
+- types express that they can be borrowed as some type T by implementing `Borrow<T>`
+  - providing a reference to a T in the trait’s borrow method
+  - a type is free to borrow as several different types
+
 ## ownership
 - all values have single owner
   - enforced through borrow checker
