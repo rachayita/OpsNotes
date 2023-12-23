@@ -11,7 +11,7 @@ bluez bluez-util blueman pulseaudio pavucontrol dunst networkmanager fzf nano \
 arch-install-scripts wget
 ```
 - lapce: rust based code editor
-- start NetworkManager, Bluetooth and ufw services by systemctl
+- start NetworkManager, Bluetooth, ufw and cronie services by systemctl
 - browser addon: dark reader, https everywhere, vimium, ublock origin, firfox container
 
 
@@ -143,6 +143,10 @@ EndSection
 - terminal background blue color #1e1e1e
 - freelance contract: https://www.ashedryden.com/blog/contract
 - `rsync -avr source destination`   no slash at path end
+- `ln -s file link`
+- if ~/.pki isn't present then $XDG_DATA_HOME/pki/nssdb will be used instead
+  - no sources mentioned for environmental variable
+- `journalctl -u cronie.service`
 
 ## 5 sec lag problem with intel gpu
 - https://github.com/qutebrowser/qutebrowser/issues/4641
