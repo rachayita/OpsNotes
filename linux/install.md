@@ -8,7 +8,7 @@ lxappearance cups netcat zathura unzip shotgun zbar tig pass  xdotool  ntfs-3g t
 skim starship eza bat pass-otp nss-mdns system-config-printer jless htop neofetch \
 tcpdump hyperfine zathura-pdf-poppler cronie dmenu gparted thunar xorg xorg-xinit \
 bluez bluez-util blueman pulseaudio pavucontrol dunst networkmanager fzf nano \
-arch-install-scripts wget
+arch-install-scripts wget lynx bc
 ```
 - lapce: rust based code editor
 - start NetworkManager, Bluetooth, ufw and cronie services by systemctl
@@ -147,6 +147,7 @@ EndSection
 - if ~/.pki isn't present then $XDG_DATA_HOME/pki/nssdb will be used instead
   - no sources mentioned for environmental variable
 - `journalctl -u cronie.service`
+- `alacritty -e nvim` to open doc in neovim directly
 
 ## 5 sec lag problem with intel gpu
 - https://github.com/qutebrowser/qutebrowser/issues/4641
