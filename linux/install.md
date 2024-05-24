@@ -8,7 +8,7 @@ lxappearance cups netcat zathura unzip shotgun zbar tig pass  xdotool  ntfs-3g t
 skim starship eza bat pass-otp nss-mdns system-config-printer jless htop neofetch \
 tcpdump hyperfine zathura-pdf-poppler cronie dmenu gparted thunar xorg xorg-xinit \
 bluez bluez-util blueman pulseaudio pavucontrol dunst networkmanager fzf nano \
-arch-install-scripts wget lynx bc
+arch-install-scripts wget lynx bc ffmpegthumbnailer ripgrep
 ```
 - lapce: rust based code editor
 - start NetworkManager, Bluetooth, ufw and cronie services by systemctl
@@ -193,6 +193,7 @@ EndSection
 - `:w !sudo tee "%"` root priviledge for saving doc in vim
 - `:5,17s/^/#/` comment line 5-17
 - `:%s/^/#/` comment all lines
+- `gx` opens links under cursor
 
 ## nvimdiff
 - ]c          - next difference
@@ -217,8 +218,9 @@ EndSection
   - BA common ancestor of remote and local changes.
 - :diffupdate - re-scan the files for differences
   - choose which version you want to keep with :diffget //2 or :diffget //3
-  - the //2 and //3 are unique identifiers for the target/master copy and the merge/branch copy file names
-- If you were trying to do a git pull when you ran into merge conflicts, type `git rebase –continue`
+  - //2 and //3 are unique identifiers for target/master copy and merge/branch copy file names
+- If you were trying to do a git pull when you ran into merge conflicts: 
+  - type `git rebase –continue`
 
 ## mutt-wizard
 > `mw -a user@gmail.com -u user -n user -i imap.gmail.com -I 993 -s smtp.gmail.com -S 465`
@@ -253,6 +255,9 @@ pinentry-program /usr/bin/pinentry-tty
 ExecStart=
 ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin username %I $TERM
 ```
+
+## update mirror list
+`sudo reflector --latest 20 --protocol https --sort score --save /etc/pacman.d/mirrorlist`
 
 ## move tabs at bottom in firefox
 1. Find your Firefox profile directory

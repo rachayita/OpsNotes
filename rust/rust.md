@@ -6,19 +6,17 @@
   - if program compiles, it is free of data races
 - only  ASCII characters may appear in byte literals
   - since ASCII code for A is 65, literals b'A' and 65u8 are exactly equivalent
-- panic: abrupt termination
-- `assert!` panics with a helpful message and source location of the failing check
 - vectors and hash maps store their data on heap
-- the distinction between shared and mutable references
+- difference between shared and mutable references
   - to enforce multiple readers or single writer rule at compile time
-- as long as there are shared references to a value, not even its owner can modify it
-  - the value is locked down
--  want to know whether two references point to the same memory
-  - use `std::ptr::eq`, which compares them as addresses:
-   ``` rust
-     assert!(rx == ry);         // their referents are equal
-     assert!(!std::ptr::eq(rx, ry)); // but occupy different addresses
-   ```
+  - as long as there are shared references to a value, not even its owner can modify it
+    - the value is locked down
+  -  whether two references point to the same memory:
+    - use `std::ptr::eq`, which compares them as addresses:
+     ``` rust
+       assert!(rx == ry);         // their referents are equal
+       assert!(!std::ptr::eq(rx, ry)); // but occupy different addresses
+     ```
 - rust doesnot have exceptions
 - rust doesnot use the term object much, preferring to call everything a value
 - `?` can only be used in functions that have a `Result` return type
@@ -41,16 +39,16 @@
 - `use` directives can be used to "bring in scope" names from other namespaces
   - in use directives, curly brackets are "globs"
 - Using @ lets us test a value and save it in a variable within one pattern
-- panic:
+- panic: abrupt termination
   - not a crash
   - not undefined behavior
   - more like a RuntimeException in java
+- `assert!` panics with a helpful message and source location of the failing check
 - methods can be called as regular functions
-- rust inserts this at the beginning of every module
+- rust inserts this at the beginning of every module:
 ``` rust
 use std::prelude::v1::*;
 ```
-- start test names with “should”
 - `&mut` means exclusive access
 - `&` means shared access
 
@@ -64,7 +62,7 @@ use std::prelude::v1::*;
 - pushing values on stack is not considered allocating
 
 ## array
-- Rust requires array indices to be usize values.
+- array indices are usize values
 - array is `'static`
 - instead use `Iterator::map` by calling `.iter()` or `.into_iter()` on array as
   - [T; N]::map is only necessary if needed a new array of same size in result
@@ -80,16 +78,13 @@ let s2 = struct2 {
 };
 ```
 
-## modules
-- modules are namespaces
-  - they’re containers for:
-    - functions, types, constants, and so on that make up program or library
-
-## TODO
+## crates and modules
 - crates are about code sharing between projects
 - modules are about code organization within a project
 - rust never compiles its modules separately, even if they are in separate files:
   - when a rust crate is built, all of its modules are recompiled
+- modules are namespaces, they’re containers for:
+    - functions, types, constants, and so on that make up program or library
 - `super` is an alias for the parent module
 - `self` is an alias for the current module
 - while paths in imports are treated as absolute paths by default
@@ -106,7 +101,7 @@ let s2 = struct2 {
 - ref is checked at compile time while RefCell at runtime(panic)
 - the trait itself must be in scope, otherwise, all its methods are hidden
 - use statics for larger amounts of data, or borrow a reference to the constant value
-. statics can be marked mut but not thread-safe
+- statics can be marked mut but that is not thread-safe
 - `use` and `extern` crate declarations are items too
   - even though they are just aliases, they can be pub
 - to attach an attribute to a whole crate:
@@ -117,18 +112,18 @@ let s2 = struct2 {
   - except that if the assertion fails, the error message shows both values
 - `debug_assert!()` and `debug_assert_eq!()`  are checked only in debug builds
 - to test error cases, add the `#[should_panic]` attribute
+- start test names with “should”
 - `String` uses a `Vec<u8>` internally to hold its text
   - so String need not implement Drop itself
   - it lets its Vec take care of freeing the characters
 - if a type implements `Drop`, it cannot implement `Copy` trait,
-- enums are `Sized`
-  - whichever variant is present,
-    - enum always occupies enough space to hold its largest variant
-- a `Vec<T>` owns a heap-allocated buffer whose size can vary
-  - the Vec value itself is a pointer to the buffer
-  - its capacity, and its length, so Vec<T> is a sized type
 - by default, struct and enum types are not `Copy`,
   - can implement `Copy` on them also
+- enums are `Sized`
+  - whichever variant is present, enum occupies enough space to hold its largest variant
+- a `Vec<T>` owns a heap-allocated buffer whose size can vary
+  - the Vec value itself is a pointer to the buffer
+  - it has capacity and length, so Vec<T> is a sized type
 - only implement `Into` if conversion to a type outside the current crate is required
   - `From` cannot do these type of conversions because of rust's orphaning rules
 - prefer using `Into` over `From` when specifying trait bounds on a generic function
@@ -154,7 +149,7 @@ let s2 = struct2 {
 - all values have single owner
   - enforced through borrow checker
 - references are never null
-- borrowing rules:
+- borrowing rule:
   - can have either (not both) one mutable reference or any number of immutable references
 - references must always be valid
 - no lifetime annotation required when `self` is a parameter
@@ -165,8 +160,8 @@ let s2 = struct2 {
   - across the lifetime of a shared reference:
     - neither its referent, nor anything reachable from that referent, can be changed
   - there exist no live mutable references to anything in that structure:
-    - its owner is held read- only and so on
-    - it’s really frozen.
+    - its owner is held read-only and so on
+    - it’s really frozen
 - mutable access is exclusive access
   - value borrowed by a mutable reference is reachable exclusively via that reference
   - across the lifetime of a mutable reference
@@ -205,8 +200,7 @@ let mut v = (136, 139);
 let m = &mut v;
 let m0 = &mut m.0; // ok: reborrowing mutable from mutable
 *m0 = 137;
-// ok: reborrowing shared from mutable, and doesn't overlap with m0
-let r1 = &m.1;
+let r1 = &m.1;     // ok: reborrowing shared from mutable, and doesn't overlap with m0
 v.1;          // error: access through other paths still forbidden
 
 int x = 42;      // int variable, not const
@@ -1181,6 +1175,11 @@ members = [
 
 ## miscellaneous
 - reflexive, means `Into<T> for T` is implemented
+- never implement `PartialEq` for a foreign type
+  - do impl PartialEq<ForeignType> for LocalType
+  - but it should not do impl PartialEq<LocalType> for ForeignType.
+  - this avoids the problem of transitive chains that criss-cross crate boundaries
+- NaN is unequal to every other value
 
 ## commands
 - `rustc --print sysroot`
