@@ -5,10 +5,10 @@
 sudo pacman -S fd base-devel git meld neovim firefox mpv vifm youtube-dl feh stow \
 alacritty chromium sxiv gdb vimb ueberzug xclip neomutt font-manager syncthing ufw gufw \
 lxappearance cups netcat zathura unzip shotgun zbar tig pass  xdotool  ntfs-3g typst \
-skim starship eza bat pass-otp nss-mdns system-config-printer jless htop neofetch \
+skim starship eza bat pass-otp nss-mdns system-config-printer jless htop fastfetch \
 tcpdump hyperfine zathura-pdf-poppler cronie dmenu gparted thunar xorg xorg-xinit \
-bluez bluez-util blueman pulseaudio pavucontrol dunst networkmanager fzf nano \
-arch-install-scripts wget lynx bc ffmpegthumbnailer ripgrep
+bluez bluez-util blueman pavucontrol pipewire-pulse dunst networkmanager fzf nano \
+arch-install-scripts wget lynx bc ffmpegthumbnailer ripgrep glow
 ```
 - lapce: rust based code editor
 - start NetworkManager, Bluetooth, ufw and cronie services by systemctl
@@ -17,7 +17,7 @@ arch-install-scripts wget lynx bc ffmpegthumbnailer ripgrep
 
 ## paru
 - paru-bin, stint(cmd line color picker), mutt-wizard-git, simple-mtpfs-git, obinskit
-- brother-mfc-l2700dw, 7-zip-full (7z), vscodium, dmenufm, linux-wifi-hotspot
+- brother-mfc-l2700dw, 7-zip-full (7z), vscodium-bin, dmenufm, linux-wifi-hotspot
 
 ## cargo
 powerline-rs du-dust racer  diskonaut paru nethoscope broot hmm fd-find
@@ -188,6 +188,13 @@ EndSection
 > `git remote set-url origin ssh://git@github.com/username/<url-repo>.git`
 > `ssh -T git@github.com`
 
+## [make brightness editable](https://wiki.archlinux.org/title/Backlight)
+- create new file `/etc/udev/rules.d/backlight.rules`
+- add the settings given below:
+```
+ACTION=="add", SUBSYSTEM=="backlight", RUN+="/bin/chgrp video $sys$devpath/brightness", RUN+="/bin/chmod g+w $sys$devpath/brightness"
+```
+
 ## vim
 - `set wildignore+=**/node_modules/**` ignore files or folders
 - `:w !sudo tee "%"` root priviledge for saving doc in vim
@@ -242,13 +249,13 @@ User USER_NAME
 IdentityFile "PATH TO id_rsa FILE"
 ```
 ## change pinentry permanently
-- `vim ~/.gnupg/gpg-agent.conf`
+- ``` vim ~/.gnupg/gpg-agent.conf ```
 ```
 pinentry-program /usr/bin/pinentry-tty
 ```
 ## [autologin](https://wiki.archlinux.org/title/Getty#Prompt_only_the_password_for_a_default_user_in_virtual_console_login)
-> `sudo mkdir /etc/systemd/system/getty@tty1.service.d`
-> `sudoedit /etc/systemd/system/getty@tty1.service.d/autologin.conf`
+- ``` sudo mkdir /etc/systemd/system/getty@tty1.service.d ```
+- ``` sudoedit /etc/systemd/system/getty@tty1.service.d/autologin.conf ```
 - change it to your username
 ```
 [Service]
@@ -257,7 +264,7 @@ ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin username %I $TER
 ```
 
 ## update mirror list
-`sudo reflector --latest 20 --protocol https --sort score --save /etc/pacman.d/mirrorlist`
+``` sudo reflector --latest 20 --protocol https --sort score --save /etc/pacman.d/mirrorlist ```
 
 ## move tabs at bottom in firefox
 1. Find your Firefox profile directory

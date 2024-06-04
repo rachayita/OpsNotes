@@ -923,7 +923,7 @@ let x = 4;
 - phantom type parameter: is simply a type parameter which is never used
 
 ## std::marker::Send
-- ownership of values of the type implementing `Send` can be transferred between threads
+- ownership of values of the type implementing `Send` can be moved between threads
 - almost every rust type is `Send`
   - except `Rc<T>`, `Mutex<T>`, `*mut u8`
   - `Rc` is neither `Send` nor `Sync`
@@ -1009,10 +1009,19 @@ assert!(b'9'.is_ascii_digit());
 - `slice.chars()` produce Iterator over its characters
 - if a type implements `Display`, std lib automatically implements `std::str::ToString`
 
-## Mutex
-- dynamically enforces exclusive access statically at compile time
+## std::sync::Mutex
+- solely about locking data in multi-threaded environment
+- provides exclusive (mut) access to its locked data
+  - even though the data has shared access
+  - dynamically enforces exclusive access
+    - something thats usually done statically at compile time
   - even `std::cell:RefCell` does the same without supporting multiple threads
   - both are flavous of interior mutability
+- `datarace`: a bug known for reading and writing the same memory concurrently
+- `poisoned mutex`:
+  - if a thread panics while holding a mutex
+    - rust marks the mutex as poisoned
+  - any attempt to lock the subsequent poisoned mutex will get an error result
 
 ## async
 - traits doesnt have asynchronous methods
@@ -1093,6 +1102,15 @@ assert!(b'9'.is_ascii_digit());
   - `($matcher) => {$expansion};` for each rule
   - any type of paranthesis can be used
   - expansion part of rule is called its _transcriber_
+
+## & vs ref
+* `&` denotes that your pattern expects a reference to an object. Hence `&`
+   is a part of said pattern: `&Foo` matches different objects than `Foo` does.
+* `ref` indicates that you want a reference to an unpacked value. It is not
+   matched against: `Foo(ref foo)` matches the same objects as `Foo(foo)`.
+   - `ref` annotates pattern bindings to make them borrow rather than move
+     - it is **not** a part of the pattern as far as matching is concerned
+     - it does not affect *whether* a value is matched, only *how* it is matched
 
 ## cargo
 - when compiling libraries, cargo uses `--crate-type lib` option
