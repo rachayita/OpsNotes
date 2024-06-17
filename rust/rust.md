@@ -391,11 +391,6 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
   - instead of storing value directly,
     - change the datastrucuture to store the value indirectly
       - by storing a pointer to the value instead
-- `Rc` and `Arc`(Atomic Reference Count) types are very similar
-  - only difference is: Arc is safe to share between threads directly
-    - keep the containing variable alive, even if the parent thread bails out early
-    - `clone()` only increases the reference count of `Arc` not the containing variable
-  - plain Rc uses faster non- thread-safe code to update its reference count
 
 ## `!` never type
 - ! is empty type or never type because it has no value
@@ -1009,19 +1004,38 @@ assert!(b'9'.is_ascii_digit());
 - `slice.chars()` produce Iterator over its characters
 - if a type implements `Display`, std lib automatically implements `std::str::ToString`
 
-## std::sync::Mutex
-- solely about locking data in multi-threaded environment
-- provides exclusive (mut) access to its locked data
-  - even though the data has shared access
-  - dynamically enforces exclusive access
-    - something thats usually done statically at compile time
-  - even `std::cell:RefCell` does the same without supporting multiple threads
-  - both are flavous of interior mutability
-- `datarace`: a bug known for reading and writing the same memory concurrently
-- `poisoned mutex`:
-  - if a thread panics while holding a mutex
-    - rust marks the mutex as poisoned
-  - any attempt to lock the subsequent poisoned mutex will get an error result
+## std::sync::{Mutex, RwLock, CondVar, atomic}
+- `Mutex`: solely about locking data in multi-threaded environment
+  - provides exclusive (mut) access to its locked data
+    - even though the data has shared access
+    - dynamically enforces exclusive access
+      - something thats usually done statically at compile time
+    - even `std::cell:RefCell` does the same without supporting multiple threads
+    - both are flavous of interior mutability
+  - `datarace`: a bug known for reading and writing the same memory concurrently
+  - `poisoned mutex`:
+    - if a thread panics while holding a mutex
+      - rust marks the mutex as poisoned
+    - any attempt to lock the subsequent poisoned mutex will get an error result
+  - can have only one reader or one writer or none
+- `RwLock` have either one writer or many readers
+- in `CondVar` *wait()* blocks untill some other thread calls *notify_all()*
+- `atomic` types are for lock free concurrent programming
+  - AtomicIsize, AtomicUsize, AtomicI8, AtomicI16, AtomicI32, AtomicI64, AtomicU8
+    - shared integer types corresponding to single-threaded isize, usize, i8, i16 etc
+  - AtomicBool is a shared bool value.
+  - AtomicPtr<T> is a shared value of the unsafe pointer type  \*mut T
+  - their constructors are all const fn for creating static variables as well
+- RwLock, Mutex and Atomics are forms of interior mutability
+  - so their method takes self by shared reference
+  - this makes them useful as simple global variables
+
+## std::sync::{Rc, Arc}
+- `Rc` and `Arc` types are very similar
+  - only difference is: Arc is safe to share between threads directly
+    - keep the containing variable alive, even if the parent thread bails out early
+    - `clone()` only increases the reference count of `Arc` not the containing variable
+  - plain Rc uses faster non- thread-safe code to update its reference count
 
 ## async
 - traits doesnt have asynchronous methods
@@ -1198,6 +1212,8 @@ members = [
   - but it should not do impl PartialEq<LocalType> for ForeignType.
   - this avoids the problem of transitive chains that criss-cross crate boundaries
 - NaN is unequal to every other value
+- instead of const fn `lazy_static!` is used to initialize static variables
+  - incurs tiny performance cost for each access to static data
 
 ## commands
 - `rustc --print sysroot`
