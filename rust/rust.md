@@ -1040,6 +1040,11 @@ assert!(b'9'.is_ascii_digit());
 ## async
 - traits doesnt have asynchronous methods
 - only free functions and functions inherent to a specific the can be asynchronous
+- `async-std::task::block_on()`:
+  - synchronous fn that produces final value of asynchronous fn
+  - its an adapter from asynchronous to synchronous world
+  - it blocks entire thread until the value is ready
+  - use await() instead
 
 ## macro
 - generic syntax extension form
@@ -1214,6 +1219,7 @@ members = [
 - NaN is unequal to every other value
 - instead of const fn `lazy_static!` is used to initialize static variables
   - incurs tiny performance cost for each access to static data
+- `'static` is default for `-> impl` return type, so omitting it would have no effect
 
 ## commands
 - `rustc --print sysroot`
