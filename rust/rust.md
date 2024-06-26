@@ -920,7 +920,7 @@ let x = 4;
 ## std::marker::Send
 - ownership of values of the type implementing `Send` can be moved between threads
 - almost every rust type is `Send`
-  - except `Rc<T>`, `Mutex<T>`, `*mut u8`
+  - except `Rc<T>`, `Mutex<T>`, `*mut u8, GenericError`
   - `Rc` is neither `Send` nor `Sync`
     - use mutability in way that isnt thread-safe
 - types composed entirely of types that are `Send` are also `Send`
@@ -1038,13 +1038,42 @@ assert!(b'9'.is_ascii_digit());
   - plain Rc uses faster non- thread-safe code to update its reference count
 
 ## async
+- allows high performant implementations suitable for low-level languages like rust
+  - while providing most of the ergonomic benefits of threads and coroutines
+- futures are inert and make progress only when polled
+  - dropping a future stops it from making further progress
+- async is zero-cost in rust, which means only pay for what you use
+- can use async without heap allocations and dynamic dispatch
+  - which is great for performance
+  - this also lets you use async in constrained environments, such as embedded systems
+- no built-in runtime is provided by rust at global level
+  - instead, runtimes are provided by community maintained crates locally
+- both single and multithreaded runtimes are available
+- runtime uses small amount of expensive threads to handle large amount of cheap tasks
+- results in larger binary blobs due to the state machines generated from async functions
+  - since each executable bundles an async runtime
 - traits doesnt have asynchronous methods
-- only free functions and functions inherent to a specific the can be asynchronous
+- only free functions and functions inherent to a specific type can be asynchronous
 - `async-std::task::block_on()`:
   - synchronous fn that produces final value of asynchronous fn
   - its an adapter from asynchronous to synchronous world
   - it blocks entire thread until the value is ready
   - use await() instead
+- spawn requires the future to be Send implemented
+- spawn is used for thread-pool
+- spawn_local to run on current thread even without Send
+- for long running computation use:
+  - async_std::task::yield_now() or async_std::task::spawn_blocking()
+- `await` keyword suspends execution until the result of a Future is ready
+- new failure modes:
+  1. call a blocking fn
+  2. implement Future trait incorrectly
+  - such errors silently pass compiler and unit test
+- `async` keyword transform block of code into a state machine that implements `Future`
+- async fn returns a `Future`
+- `Future` runs on executor
+- with `wake()`, the executor knows exactly which futures are ready to be polled
+
 
 ## macro
 - generic syntax extension form
