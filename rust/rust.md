@@ -1042,6 +1042,7 @@ assert!(b'9'.is_ascii_digit());
   - while providing most of the ergonomic benefits of threads and coroutines
 - futures are inert and make progress only when polled
   - dropping a future stops it from making further progress
+- `Future` runs on executor
 - async is zero-cost in rust, which means only pay for what you use
 - can use async without heap allocations and dynamic dispatch
   - which is great for performance
@@ -1064,16 +1065,57 @@ assert!(b'9'.is_ascii_digit());
 - spawn_local to run on current thread even without Send
 - for long running computation use:
   - async_std::task::yield_now() or async_std::task::spawn_blocking()
-- `await` keyword suspends execution until the result of a Future is ready
 - new failure modes:
   1. call a blocking fn
   2. implement Future trait incorrectly
   - such errors silently pass compiler and unit test
-- `async` keyword transform block of code into a state machine that implements `Future`
-- async fn returns a `Future`
-- `Future` runs on executor
 - with `wake()`, the executor knows exactly which futures are ready to be polled
+### async/.await
+- `await` keyword suspends execution until the result of a Future is ready
+- `async` keyword transform block of code into a state machine that implements `Future`
+- async/.await yield control of the current thread rather than blocking
+  - allowing other code to make progress while waiting on an operation to complete
+- async fn and async block both returns a value that implements `Future`
+- async fn which take references or other non-'static arguments return a Future
+  - it is bounded by the lifetime of the arguments
+``` rust
+async fn foo(x: &u8) -> u8 { *x } // This function:
 
+// Is equivalent to this function:
+fn foo_expanded<'a>(x: &'a u8) -> impl Future<Output = u8> + 'a {
+    async move { *x }
+}
+```
+- `Future` returned from an `async fn` must be `.await`ed
+  - while its non-'static arguments are still valid
+    - storing `Future` or sending it over to another task or thread, this may be an issue
+  - workaround for turning `async fn` with references-as-arguments into a 'static future:
+    - to bundle the arguments with the call to the `async fn` inside an async block
+    - by moving the argument into async block,
+      - this extend its lifetime to match that of the `Future` returned from call to good
+``` rust
+fn bad() -> impl Future<Output = u8> {
+    let x = 5;
+    borrow_x(&x) // ERROR: `x` does not live long enough
+}
+
+fn good() -> impl Future<Output = u8> {
+    async {
+        let x = 5;
+        borrow_x(&x).await
+    }
+}
+```
+- `async move` block will take ownership of the variables it references
+  - allowing it to outlive the current scope
+  - but giving up the ability to share those variables with other code
+- variables used in async bodies must be able to travel between threads
+  - unlike Rc, &RefCell or any other types that don't implement the Send trait
+    - references to types that don't implement the Sync trait
+    - can use these types as long as they aren't in scope during a call to .await
+- hold a traditional non-futures-aware lock across an .await
+  - as it can cause the threadpool to lock up or deadlock
+  - use the Mutex in futures::lock rather than the one from std::sync
 
 ## macro
 - generic syntax extension form
