@@ -1106,6 +1106,7 @@ fn good() -> impl Future<Output = u8> {
     }
 }
 ```
+- `async` block creates an anonymous type that implements `Future`
 - `async move` block will take ownership of the variables it references
   - allowing it to outlive the current scope
   - but giving up the ability to share those variables with other code
@@ -1116,6 +1117,26 @@ fn good() -> impl Future<Output = u8> {
 - hold a traditional non-futures-aware lock across an .await
   - as it can cause the threadpool to lock up or deadlock
   - use the Mutex in futures::lock rather than the one from std::sync
+### std::pin::Pin
+- types that pin data to a location in memory
+- used for address-sensitive states like:
+  - self-referential types and intrusive data structures
+- *move* carries with it the semantics of ownership transfer from one variable to another
+  - which is the key difference between a Copy and a move
+- `Pin<Ptr>` can wrap any pointer type
+  - forming a promise that the pointee will not be moved or otherwise invalidated
+- pinning is a specific contract between the unsafe parts of a library API and its users
+- to poll futures, they must be pinned using a special type called `Pin<T>`
+- pin works in tandem with `Unpin` marker
+- pin guarantees that an object implementing `!Unpin` will not ever be move
+  - vice-versa for `Unpin` even if pinned
+- pinning an object to the stack will always be unsafe if our type implements `!Unpin`
+  - for pinning to stack, use `pin_utils` crate to avoid writing unsafe code
+- `std::marker::PhantomPinned` a marker type which doesnot implement `Unpin`
+  - if a type contains a PhantomPinned, it will not implement Unpin by default
+  - remove auto-implemented `Unpin` bound to mark this type as address-sensitive state
+- in unsafe code, the user is responsible to not to move its value
+
 
 ## macro
 - generic syntax extension form

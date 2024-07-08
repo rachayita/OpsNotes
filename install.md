@@ -112,7 +112,7 @@ Section "InputClass"
         # Option "ScrollMethod" "Edge"
         Option "ScrollMethod" "TwoFinger"
         Option "AccelProfile" "linear"
-        Option "AccelSpeed" "1"
+        Option "AccelSpeed" "0.5"
         Option "DisableWhileTyping" "False"
         Driver "libinput"
 EndSection
@@ -155,10 +155,10 @@ EndSection
 - If not, create a new file in /etc/X11/xorg.conf.d/ called 20-modesetting.conf or whatever and add this:
 ```
 Section "Device"
-	Identifier 	"Intel Graphics"
-	Driver		"modesetting"
-	Option		"AccelMethod" "glamor"
-	Option		"DRI"	"2"
+    Identifier  "Intel Graphics"
+    Driver      "modesetting"
+    Option      "AccelMethod" "glamor"
+    Option      "DRI"    "2"
 EndSection
 ```
 
@@ -226,7 +226,7 @@ ACTION=="add", SUBSYSTEM=="backlight", RUN+="/bin/chgrp video $sys$devpath/brigh
 - :diffupdate - re-scan the files for differences
   - choose which version you want to keep with :diffget //2 or :diffget //3
   - //2 and //3 are unique identifiers for target/master copy and merge/branch copy file names
-- If you were trying to do a git pull when you ran into merge conflicts: 
+- If you were trying to do a git pull when you ran into merge conflicts:
   - type `git rebase –continue`
 
 ## mutt-wizard

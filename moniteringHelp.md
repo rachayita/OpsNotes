@@ -1,2 +1,0 @@
-- hostname -i
- - should return <external_IP_of_server>, otherwise bind <external_IP_of_server> to hostname in /etc/hosts
