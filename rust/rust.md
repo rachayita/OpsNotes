@@ -271,6 +271,7 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - in method signatures inside the impl block
   - references might be tied to the lifetime of references in the struct’s fields
   - or references  might be independent
+- cannot borrow mutable reference more than once at a time
 
 ## const and 'static
 - const are static, immutable and inlined, simply replacing the const name with its value
@@ -960,7 +961,23 @@ let x = 4;
   - and no reference (just raw pointers) is used to access the same memory
 
 ## raw unsafe pointers
-- `*const T` or `*mut T`
+- `*const T` is immutable
+- `*mut T` is mutable
+```rust
+    // can create raw pointers in safe code
+    let mut num = 5;
+    let r1 = &num as *const i32;
+    let r2 = &mut num as *mut i32;
+
+    let address = 0x012345usize;
+    let r = address as *const i32; // raw pointer to an arbitary location
+```
+- cannot dereference raw pointers outside an unsafe block
+- allowed to ignore the borrowing rules
+  - by immutable and mutable pointers or multiple mutable pointers to the same location
+- are not guaranteed to point to valid memory
+- can be null
+- donot implement any automatic cleanup
 
 ## Cargo.toml
 - two build profiles:
@@ -1117,14 +1134,27 @@ fn good() -> impl Future<Output = u8> {
 - hold a traditional non-futures-aware lock across an .await
   - as it can cause the threadpool to lock up or deadlock
   - use the Mutex in futures::lock rather than the one from std::sync
+### move
+- `move` carries with it the semantics of ownership transfer from one variable to another
+  - which is the key difference between a Copy and a move
+- all values in rust are trivially moveable
+  - means address of a value is not necessarily stable in between borrows
+- compiler is allowed to move a value to a new address
+  - without running any code to notify that value that its address has changed
+  - although compiler will not insert memory moves where no semantic move has occurred
+    - there are many places where a value may be moved
+    - example, when doing assignment or passing a value into a function
+    - Box<T> and &mut T also allow moving the underlying value they point at
+    - can move out of a Box<T>, or use mem::replace to move a T out of a &mut T
+    - so putting value behind a pointer may not ensure fixed address at a memory location
+    - to get fixed address at a memory location for a value, pinning is necessary
 ### std::pin::Pin
-- types that pin data to a location in memory
+- types that pin data to a location in memory so that fully safe code cannot move
 - used for address-sensitive states like:
   - self-referential types and intrusive data structures
-- *move* carries with it the semantics of ownership transfer from one variable to another
-  - which is the key difference between a Copy and a move
 - `Pin<Ptr>` can wrap any pointer type
   - forming a promise that the pointee will not be moved or otherwise invalidated
+    - in fully safe code only
 - pinning is a specific contract between the unsafe parts of a library API and its users
 - to poll futures, they must be pinned using a special type called `Pin<T>`
 - pin works in tandem with `Unpin` marker
@@ -1137,6 +1167,15 @@ fn good() -> impl Future<Output = u8> {
   - remove auto-implemented `Unpin` bound to mark this type as address-sensitive state
 - in unsafe code, the user is responsible to not to move its value
 
+## unsafe
+- unsafe superpowers are that are not checked by compiler for memeory safety:
+  1. dereference a raw pointer
+  2. call an unsafe function or method
+  3. access or modify a mutable static variable
+  4. implement an unsafe trait
+  5. access fields of a union
+- keep unsafe block small
+- enclose unsafe code within a safe abstraction and provide a safe api
 
 ## macro
 - generic syntax extension form
