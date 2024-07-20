@@ -960,7 +960,7 @@ let x = 4;
   - as long as the underlying object is live
   - and no reference (just raw pointers) is used to access the same memory
 
-## raw unsafe pointers
+## raw unsafe pointers or primitive type pointers
 - `*const T` is immutable
 - `*mut T` is mutable
 ```rust
@@ -1055,9 +1055,7 @@ assert!(b'9'.is_ascii_digit());
   - plain Rc uses faster non- thread-safe code to update its reference count
 
 ## async
-- allows high performant implementations suitable for low-level languages like rust
-  - while providing most of the ergonomic benefits of threads and coroutines
-- futures are inert and make progress only when polled
+- `Futures` are inert and make progress only when polled
   - dropping a future stops it from making further progress
 - `Future` runs on executor
 - async is zero-cost in rust, which means only pay for what you use
@@ -1076,8 +1074,8 @@ assert!(b'9'.is_ascii_digit());
   - synchronous fn that produces final value of asynchronous fn
   - its an adapter from asynchronous to synchronous world
   - it blocks entire thread until the value is ready
-  - use await() instead
-- spawn requires the future to be Send implemented
+  - use `await()` instead
+- spawn requires the future to be `Send` implemented
 - spawn is used for thread-pool
 - spawn_local to run on current thread even without Send
 - for long running computation use:
@@ -1164,6 +1162,7 @@ fn good() -> impl Future<Output = u8> {
   - thing wrapped by Pin is not the value which we want to pin itself,
     - but rather a pointer to that value
     - Pin<Ptr> does not pin the Ptr; instead, it pins the pointer’s pointee value
+- cannot mutably dereference a `Pin<Ptr>` unless the pointee is `Unpin` or we use unsafe
 - pinning is a specific contract between the unsafe parts of a library API and its users
 - to poll futures, they must be pinned using a special type called `Pin<T>`
 - pin works in tandem with `Unpin` marker
@@ -1175,6 +1174,10 @@ fn good() -> impl Future<Output = u8> {
   - if a type contains a PhantomPinned, it will not implement Unpin by default
   - it removes auto-implemented `Unpin` bound to mark this type as address-sensitive state
 - in unsafe code, the user is responsible to not to move its value
+- pinned data must be dropped before it is invalidated
+  - to overwrite a pinned value, its `drop` must be called beforehand
+    - to prevent memeory leaks
+    - as a matter of soundness
 
 ## unsafe
 - unsafe superpowers are that are not checked by compiler for memeory safety:
