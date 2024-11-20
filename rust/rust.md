@@ -216,6 +216,16 @@ assert_eq!(*p, 42);
 x += 1;       // error: cannot assign to x because it is borrowed
 assert_eq!(*p, 42);  // if you take out the assignment, this is true
 ```
+## Resource Aquisition Is Initialization (RAII)
+- memeory allocation and deallocation are tied to lifetime of objects
+  - when an object is created memory is allocated, freed when destroyed
+  - ensures automatic memory allocation and deallocation
+- every piece of memory has exactly one owner in rust
+  - prevent issues like dangling pointers
+- ownership can be transferred or moved between variables
+- borrowing and referencing rules with/out mutability
+  - prevents accidental modification of data
+    - that was assumed constant by another part of program
 
 ## lifetime
 - name for a region of code that some reference must be valid for
@@ -1068,7 +1078,7 @@ assert!(b'9'.is_ascii_digit());
 - runtime uses small amount of expensive threads to handle large amount of cheap tasks
 - results in larger binary blobs due to the state machines generated from async functions
   - since each executable bundles an async runtime
-- traits doesnt have asynchronous methods
+- traits doesnot have asynchronous methods
 - only free functions and functions inherent to a specific type can be asynchronous
 - `async-std::task::block_on()`:
   - synchronous fn that produces final value of asynchronous fn
@@ -1079,7 +1089,7 @@ assert!(b'9'.is_ascii_digit());
 - spawn is used for thread-pool
 - spawn_local to run on current thread even without Send
 - for long running computation use:
-  - async_std::task::yield_now() or async_std::task::spawn_blocking()
+  - `async_std::task::yield_now()` or `async_std::task::spawn_blocking()`
 - new failure modes:
   1. call a blocking fn
   2. implement Future trait incorrectly
@@ -1092,7 +1102,7 @@ assert!(b'9'.is_ascii_digit());
   - allowing other code to make progress while waiting on an operation to complete
 - async fn and async block both returns a value that implements `Future`
 - async fn which take references or other non-'static arguments return a Future
-  - it is bounded by the lifetime of the arguments
+  - that is bounded by the lifetime of the arguments
 ``` rust
 async fn foo(x: &u8) -> u8 { *x } // This function:
 
@@ -1161,7 +1171,7 @@ fn good() -> impl Future<Output = u8> {
     - in fully safe code only
   - thing wrapped by Pin is not the value which we want to pin itself,
     - but rather a pointer to that value
-    - Pin<Ptr> does not pin the Ptr; instead, it pins the pointer’s pointee value
+    #TODO - Pin<Ptr> does not pin the Ptr; instead, it pins the pointer’s pointee value
 - cannot mutably dereference a `Pin<Ptr>` unless the pointee is `Unpin` or we use unsafe
 - pinning is a specific contract between the unsafe parts of a library API and its users
 - to poll futures, they must be pinned using a special type called `Pin<T>`
