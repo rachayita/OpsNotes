@@ -335,27 +335,6 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - floating point values are treated just like generic parameters
   - without trait bounds beyond `Copy`
 
-## unsafe
-- unsafe superpower includes:
-  - dereference a pointer
-  - call an unsafe function or method
-  - access or modify a mutable static variable
-  - implement an unsafe trait
-  - access fields of union S
-- can create raw pointers in safe code
-  - but can't dereference raw pointers outside an unsafe block
-- creating a pointer does not harm
-  - unless we try to access value it points at might end up dealing with an invlid value
-- rust borrow checker can't understand that we are borrowing different parts of the slice
-  - it only know that we are borrowing from the same slice twice
-- use `extern` to facilitate Foreign Function Interface (FFI):
-  - way for programming language to define functions
-  - enables different programming languages to call those functions
-- orphan rule can be bypassed:
-  - using Newtype pattern using Wrapper struct to hold instance of the type
-  - if we want the Newtype to have every method the inner type has:
-    - implementing `Deref` on Wrapper to return the inner type would be a solution
-
 ## types
 - types are namespaces too
 - rust compiler gives very few guarantees about how it lays out types
@@ -970,25 +949,6 @@ let x = 4;
   - as long as the underlying object is live
   - and no reference (just raw pointers) is used to access the same memory
 
-## raw unsafe pointers or primitive type pointers
-- `*const T` is immutable
-- `*mut T` is mutable
-```rust
-    // can create raw pointers in safe code
-    let mut num = 5;
-    let r1 = &num as *const i32;
-    let r2 = &mut num as *mut i32;
-
-    let address = 0x012345usize;
-    let r = address as *const i32; // raw pointer to an arbitary location
-```
-- cannot dereference raw pointers outside an unsafe block
-- allowed to ignore the borrowing rules
-  - by immutable and mutable pointers or multiple mutable pointers to the same location
-- are not guaranteed to point to valid memory
-- can be null
-- donot implement any automatic cleanup
-
 ## Cargo.toml
 - two build profiles:
   - [profile.dev]
@@ -1095,11 +1055,9 @@ assert!(b'9'.is_ascii_digit());
   2. implement Future trait incorrectly
   - such errors silently pass compiler and unit test
 - with `wake()`, the executor knows exactly which futures are ready to be polled
-### async/.await
-- `await` keyword suspends execution until the result of a Future is ready
+- async is an annotation on functions, traits and blocks
 - `async` keyword transform block of code into a state machine that implements `Future`
-- async/.await yield control of the current thread rather than blocking
-  - allowing other code to make progress while waiting on an operation to complete
+- calling an async function finds the code to run, but doesn't run it
 - async fn and async block both returns a value that implements `Future`
 - async fn which take references or other non-'static arguments return a Future
   - that is bounded by the lifetime of the arguments
@@ -1142,6 +1100,25 @@ fn good() -> impl Future<Output = u8> {
 - hold a traditional non-futures-aware lock across an .await
   - as it can cause the threadpool to lock up or deadlock
   - use the Mutex in futures::lock rather than the one from std::sync
+
+### await
+- await is a postfix keyword used with a dot operator
+- await is an operator used in expressions
+- `await` keyword suspends execution until the result of a Future is ready
+- await can only be used inside an async context
+- future doesnot do any work untill it is awaited
+- async can define future and await combine futures
+- await is an operator which continues execution of current task
+- if current task cant continue right now, gives another task an opportunity to continue
+- async/.await yield control of the current thread to runtime rather than blocking
+  - allowing other code to make progress while waiting on an operation to complete
+- to get result of that computation, use the await keyword
+- if the result is ready immediately or can be computed without waiting,
+  - then await simply does that computation to produce the result
+-if the result is not ready,
+  - then await hands control over to the scheduler so that another task can proceed
+    - this is `cooperative multitasking`
+
 ### move
 - `move` carries with it the semantics of ownership transfer from one variable to another
   - which is the key difference between a Copy and a move
@@ -1158,6 +1135,7 @@ fn good() -> impl Future<Output = u8> {
     - can move out of a Box<T>, or use mem::replace to move a T out of a &mut T
     - so putting value behind a pointer may not ensure fixed address at a memory location
     - to get fixed address at a memory location for a value, pinning is necessary
+
 ### std::pin::Pin
 - types that pin data to a location in memory
   - from the time it is pinned until its drop is called
@@ -1190,14 +1168,144 @@ fn good() -> impl Future<Output = u8> {
     - as a matter of soundness
 
 ## unsafe
-- unsafe superpowers are that are not checked by compiler for memeory safety:
+- unsafe superpowers are that they are not checked by compiler for memeory safety:
   1. dereference a raw pointer
   2. call an unsafe function or method
   3. access or modify a mutable static variable
   4. implement an unsafe trait
   5. access fields of a union
-- keep unsafe block small
-- enclose unsafe code within a safe abstraction and provide a safe api
+
+
+  ### 1. dereference a raw pointer
+
+    - immutabl pointer cant be directly assigned to after being dereferenced
+    - `*const T` is immutable raw pointer
+    - `*mut T` is mutable raw pointer
+    - asterisk is not dereference operator; it is part of the type name
+    ```rust
+        // can create raw pointers in safe code
+        let mut num = 5;
+        let r1 = &num as *const i32;
+        let r2 = &mut num as *mut i32;
+
+        unsafe {
+          println!("r1 is: {}", *r1);
+          println!("r2 is: {}", *r2);
+        }
+
+        // Creating raw pointers with the raw borrow operators
+        let r3 = &raw const num;
+        let r4 = &raw mut num;
+
+        let address = 0x012345usize;
+        let r = address as *const i32; // raw pointer to an arbitary location
+    ```
+    - cannot dereference raw pointers outside an unsafe block
+    - can create raw pointers in safe code
+    - creating a pointer does not harm
+      - unless to access value it points at might end up dealing with an invlid value
+    - immutable raw pointer: cant be directly assigned to after being dereferenced
+    - different from references and smart pointers, raw pointers:
+      - are allowed to ignore the borrowing rules by having both immutable and mutable
+        pointers or multiple mutable pointers to the same location
+      - arent guaranteed to point to valid memory
+      - are allowed to be null
+      - dont implement any automatic cleanup
+    - gives performance
+    - has ability to interface with another language
+    - interface with hardware where rust guarantees donot apply
+    - borrow checker cant understand that we are borrowing different parts of the slice
+      - it only know that we are borrowing from the same slice twice
+
+  ### 2. call an unsafe function or method
+    ```rust
+        unsafe fn dangerous() {}
+
+        unsafe {
+            dangerous();
+        }
+    ```
+
+    - calling unsafe fn without unsafe block or fn results in error
+    - to perform unsafe operations in the body of an unsafe function:
+      - we still need to use an unsafe block just as within a regular function
+      - compiler will warn you if you forget
+      - it helps to keep unsafe blocks as small as possible
+    - enclose unsafe code within a safe abstraction and provide a safe api
+      - gives surety about the proper functioning of code
+    - using `extern` Functions to Call External Code
+      - keyword `extern` facilitates creation and use of Foreign Function Interface(FFI)
+      - FFI is a way for programming language to:
+        - define fns to enable a foreign programming language to call those fns
+      ```rust
+        #[unsafe(no_mangle)]
+        pub extern "C" fn call_from_c() {
+          safe println!("Just called a Rust function from C!");
+        }
+      ```
+
+  ### 3. access or modify a mutable static variable
+    - in rust, global variables are called static variable
+    - static variables are similar to constants
+      - but values in static variable have a fixed address in memory and can be mutable
+       - modifying mutable static variable is unsafe
+      - while constants are allowed to duplicate data whenever they are used
+    - names are in SCREAMING_SNAKE_CASE
+    - static variable can only store references with `'static` lifetime
+      - means compiler can figure out lifetime
+      - does not require explicit annotation
+    - static has fixed address in memory which always access same data
+    - while constants are allowed to duplicate their data whenever they are used
+    - static can be mutable unlike constants so accessing it is unsafe
+      - read/write must be in `unsafe` block
+      - for unsafe, comment it starting with `SAFETY` to explain the safety rules
+    - compiler will not allow you to create references to a mutable static variable
+      - can only access it via raw pointer, created with one of the raw borrow operators
+      ```rust
+        static HELLO_WORLD: &str = "Hello, world!";
+
+        //unsafe and used only in single thread
+        static mut COUNTER: u32 = 0;
+
+        /// SAFETY: datarace in multi-threads, must call it from single thread at a time
+        unsafe fn add_to_count(inc: u32) {
+            unsafe {
+                COUNTER += inc;
+            }
+        }
+
+        fn main() {
+            println!("{HELLO_WORLD}");
+            unsafe {
+                // SAFETY: This is only called from a single thread in `main`.
+                add_to_count(3);
+                println!("COUNTER: {}", *(&raw const COUNTER));
+            }
+        }
+      ```
+
+  ### 4. implement an unsafe trait
+    - at least one of its methods has some invariant that the compiler cant verify
+  ```rust
+
+    unsafe trait Foo {
+        // methods go here
+    }
+
+    unsafe impl Foo for i32 {
+        // method implementations go here
+    }
+  ```
+
+  ### 5. access fields of a union
+  - accessing union fields is unsafe because:
+    - rust cant guarantee the type of data currently being stored in the union instance
+
+## Newtype
+- orphan rule can be bypassed:
+  - using Newtype pattern using Wrapper struct to hold instance of the type
+  - if we want the Newtype to have every method the inner type has:
+    - implementing `Deref` on Wrapper to return the inner type would be a solution
 
 ## macro
 - generic syntax extension form
