@@ -335,27 +335,6 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - floating point values are treated just like generic parameters
   - without trait bounds beyond `Copy`
 
-## unsafe
-- unsafe superpower includes:
-  - dereference a pointer
-  - call an unsafe function or method
-  - access or modify a mutable static variable
-  - implement an unsafe trait
-  - access fields of union S
-- can create raw pointers in safe code
-  - but can't dereference raw pointers outside an unsafe block
-- creating a pointer does not harm
-  - unless we try to access value it points at might end up dealing with an invlid value
-- rust borrow checker can't understand that we are borrowing different parts of the slice
-  - it only know that we are borrowing from the same slice twice
-- use `extern` to facilitate Foreign Function Interface (FFI):
-  - way for programming language to define functions
-  - enables different programming languages to call those functions
-- orphan rule can be bypassed:
-  - using Newtype pattern using Wrapper struct to hold instance of the type
-  - if we want the Newtype to have every method the inner type has:
-    - implementing `Deref` on Wrapper to return the inner type would be a solution
-
 ## types
 - types are namespaces too
 - rust compiler gives very few guarantees about how it lays out types
@@ -971,6 +950,7 @@ let x = 4;
   - and no reference (just raw pointers) is used to access the same memory
 
 ## raw unsafe pointers or primitive type pointers
+- immutable means that the pointer cant be directly assigned to after being dereferenced
 - `*const T` is immutable
 - `*mut T` is mutable
 ```rust
@@ -988,6 +968,9 @@ let x = 4;
 - are not guaranteed to point to valid memory
 - can be null
 - donot implement any automatic cleanup
+- gives performance
+- has ability to interface with another language
+- interface with hardware where rust guarantees donot apply
 
 ## Cargo.toml
 - two build profiles:
@@ -1095,11 +1078,9 @@ assert!(b'9'.is_ascii_digit());
   2. implement Future trait incorrectly
   - such errors silently pass compiler and unit test
 - with `wake()`, the executor knows exactly which futures are ready to be polled
-### async/.await
-- `await` keyword suspends execution until the result of a Future is ready
+- async is an annotation on functions, traits and blocks
 - `async` keyword transform block of code into a state machine that implements `Future`
-- async/.await yield control of the current thread rather than blocking
-  - allowing other code to make progress while waiting on an operation to complete
+- calling an async function finds the code to run, but doesn't run it
 - async fn and async block both returns a value that implements `Future`
 - async fn which take references or other non-'static arguments return a Future
   - that is bounded by the lifetime of the arguments
@@ -1142,6 +1123,25 @@ fn good() -> impl Future<Output = u8> {
 - hold a traditional non-futures-aware lock across an .await
   - as it can cause the threadpool to lock up or deadlock
   - use the Mutex in futures::lock rather than the one from std::sync
+
+### await
+- await is a postfix keyword used with a dot operator
+- await is an operator used in expressions
+- `await` keyword suspends execution until the result of a Future is ready
+- await can only be used inside an async context
+- future doesnot do any work untill it is awaited
+- async can define future and await combine futures
+- await is an operator which continues execution of current task
+- if current task cant continue right now, gives another task an opportunity to continue
+- async/.await yield control of the current thread to runtime rather than blocking
+  - allowing other code to make progress while waiting on an operation to complete
+- to get result of that computation, use the await keyword
+- if the result is ready immediately or can be computed without waiting,
+  - then await simply does that computation to produce the result
+-if the result is not ready,
+  - then await hands control over to the scheduler so that another task can proceed
+    - this is `cooperative multitasking`
+
 ### move
 - `move` carries with it the semantics of ownership transfer from one variable to another
   - which is the key difference between a Copy and a move
@@ -1158,6 +1158,7 @@ fn good() -> impl Future<Output = u8> {
     - can move out of a Box<T>, or use mem::replace to move a T out of a &mut T
     - so putting value behind a pointer may not ensure fixed address at a memory location
     - to get fixed address at a memory location for a value, pinning is necessary
+
 ### std::pin::Pin
 - types that pin data to a location in memory
   - from the time it is pinned until its drop is called
@@ -1190,14 +1191,65 @@ fn good() -> impl Future<Output = u8> {
     - as a matter of soundness
 
 ## unsafe
-- unsafe superpowers are that are not checked by compiler for memeory safety:
+- unsafe superpowers are that they are not checked by compiler for memeory safety:
   1. dereference a raw pointer
   2. call an unsafe function or method
   3. access or modify a mutable static variable
   4. implement an unsafe trait
   5. access fields of a union
+
+  1. dereference a raw pointer
+  ```
+    - immutable raw pointer: *const T
+    - mutable raw pointer: *mut T
+    - asterisk isn’t the dereference operator; it’s part of the type name
+  ```
+    - immutable raw pointer: cant be directly assigned to after being dereferenced
+    - different from references and smart pointers, raw pointers:
+      - are allowed to ignore the borrowing rules by having both immutable and mutable
+        pointers or multiple mutable pointers to the same location
+      - arent guaranteed to point to valid memory
+      - are allowed to be null
+      - dont implement any automatic cleanup
+
+  2. call an unsafe function or method
+```rust
+    unsafe fn dangerous() {}
+
+    unsafe {
+        dangerous();
+    }
+```
+    - calling unsafe fn without unsafe block or fn results in error
+    - to perform unsafe operations in the body of an unsafe function:
+      - we still need to use an unsafe block just as within a regular function
+      - compiler will warn you if you forget
+      - it helps to keep unsafe blocks as small as possible
+
+  2.1. creating a safe abstraction over unsafe code
+  3. access or modify a mutable static variable
+
+  4. implement an unsafe trait
+
+  5. access fields of a union
+
+
+
 - keep unsafe block small
 - enclose unsafe code within a safe abstraction and provide a safe api
+- can create raw pointers in safe code
+  - but can't dereference raw pointers outside an unsafe block
+- creating a pointer does not harm
+  - unless we try to access value it points at might end up dealing with an invlid value
+- rust borrow checker can't understand that we are borrowing different parts of the slice
+  - it only know that we are borrowing from the same slice twice
+- use `extern` to facilitate Foreign Function Interface (FFI):
+  - way for programming language to define functions
+  - enables different programming languages to call those functions
+- orphan rule can be bypassed:
+  - using Newtype pattern using Wrapper struct to hold instance of the type
+  - if we want the Newtype to have every method the inner type has:
+    - implementing `Deref` on Wrapper to return the inner type would be a solution
 
 ## macro
 - generic syntax extension form
