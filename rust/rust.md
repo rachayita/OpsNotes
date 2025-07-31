@@ -51,6 +51,10 @@ use std::prelude::v1::*;
 ```
 - `&mut` means exclusive access
 - `&` means shared access
+- rust doesnt allow to create your own operators or overload arbitrary operators
+  - but you can overload operations and corresponding traits listed in std::ops
+    - by implementing traits associated with the operator
+    - ex: overload `+` to add two, say `Point` using `std::ops::Add`
 
 ## memory model
 - when value is assigned to a variable, that value is from then on named by that variable
@@ -382,7 +386,7 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
     - change the datastrucuture to store the value indirectly
       - by storing a pointer to the value instead
 
-## `!` never type
+### `!` never type
 - ! is empty type or never type because it has no value
 - expressions that don’t finish normally are assigned the special type !
   - they’re exempt from the rules about types having to match
@@ -409,7 +413,7 @@ trait MyTrait {}
 impl MyTrait for fn() -> ! {}
 ```
 
-## dynamically sized type (DST) or unsized type
+### dynamically sized type (DST) or unsized type
 - ex: str: we can't know how long the string is untill runtime
   - means can't create a variable of type str nor can take an argument of type str
 - str and [T] types denote sets of values of varying sizes, they are unsized types
@@ -551,7 +555,7 @@ impl MyTrait for fn() -> ! {}
     - it contains atleast one new local type
     - new local type satisfies the rules for exemption
 
-## trait object
+### trait object
 - an opaque value of another type that implements a set of traits
   - the set of traits is made up of:
     - an "object-safe" base trait
@@ -612,7 +616,7 @@ impl MyTrait for fn() -> ! {}
 - `dyn Trait` produce smaller code than `impl Trait` / generic parameters
   - as the method won't be duplicated for each concrete type
 
-## object safety
+### object safety
 - a trait object can only be constructed out of traits that satisfy certain restrictions
   - which are collectively called 'object safety'
 - object safe traits can be the base trait of a trait object
@@ -653,7 +657,7 @@ impl MyTrait for fn() -> ! {}
 ```
 -  Each crate is a rust project
 
-## generic trait
+### generic trait
 1. with generic type parameters
   - ex: `trait Foo<T>`
   - change must be updated to all users
@@ -671,6 +675,15 @@ impl MyTrait for fn() -> ! {}
 - rule of thumb:
   1. use associated type for only one implementation of trait for given type
   2. else use generic type parameters
+
+### associated type trait
+```rust
+pub trait Iterator {
+    type Item;
+
+    fn next(&mut self) -> Option<Self::Item>;
+}
+```
 
 ## std::cell::Cell
 - if we can't get reference to a value then mutating it is f
@@ -879,6 +892,7 @@ let x = 4;
 - if let and while let are both refutable and irrefutable
 - gives warning if it doesn’t make sense to use if let with an irrefutable pattern
   - ex: if let x = 5 { ... };
+
 ## Marker traits: `std::marker::`
 - indicate property of implementing type
 - no methods or no associated types, just empty traits
@@ -889,13 +903,13 @@ let x = 4;
   - unless the type contains something that doesnot implement marker trait
 - allow to write bounds that capture semantic requirements not directly expressed in code
 
-## marker types
+### marker types
 - are unit types
 - hold no data and have no methods
 - useful for marking a type as being in particular state
 - to make impossible for a user to misuse an API
 
-## std::marker::PhantomData<T> and Zero Sized Type
+### std::marker::PhantomData<T> and Zero Sized Type
 - where T: ?Sized
   - `PhantomData`: zero-sized type used to mark things that “act like” they own a T
 - tells compiler that:
@@ -907,7 +921,7 @@ let x = 4;
   - so as not to indicate ownership
 - phantom type parameter: is simply a type parameter which is never used
 
-## std::marker::Send
+### std::marker::Send
 - ownership of values of the type implementing `Send` can be moved between threads
 - almost every rust type is `Send`
   - except `Rc<T>`, `Mutex<T>`, `*mut u8, GenericError`
@@ -915,7 +929,7 @@ let x = 4;
     - use mutability in way that isnt thread-safe
 - types composed entirely of types that are `Send` are also `Send`
 
-## std::marker::Sync
+### std::marker::Sync
 - types that implement `Sync` are safe to pass by non mutable reference to another thread
   - they can be shared across threads
   - safe here means free form data races and undefined behaviour
