@@ -38,7 +38,7 @@
 - `::<...>` is called turbofish
 - `use` directives can be used to "bring in scope" names from other namespaces
   - in use directives, curly brackets are "globs"
-- Using @ lets us test a value and save it in a variable within one pattern
+- Using @ lets us test a value and save it in a variable within a pattern only
 - panic: abrupt termination
   - not a crash
   - not undefined behavior
@@ -55,49 +55,6 @@ use std::prelude::v1::*;
   - but you can overload operations and corresponding traits listed in std::ops
     - by implementing traits associated with the operator
     - ex: overload `+` to add two, say `Point` using `std::ops::Add`
-
-## memory model
-- when value is assigned to a variable, that value is from then on named by that variable
-- when a variable is later accessed
-  - imagine drawing a line from the previous access to the new access (called 'flows')
-    - which establishes a dependency relationship between the two accesses
-    - you cannot draw lines from variable whose value is uninitialized or has been moved
-- a variable exists only so long as it holds a legal value
-- pushing values on stack is not considered allocating
-
-## array
-- array indices are usize values
-- array is `'static`
-- instead use `Iterator::map` by calling `.iter()` or `.into_iter()` on array as
-  - [T; N]::map is only necessary if needed a new array of same size in result
-  - lazy iterators tend to get optimized very well
-
-## struct
-``` rust
-// This is called "struct update syntax",
-//can only happen in last position, and cannot be followed by a comma
-let s2 = struct2 {
-    x: 14.0,
-    ..struct2
-};
-```
-
-## crates and modules
-- crates are about code sharing between projects
-- modules are about code organization within a project
-- rust never compiles its modules separately, even if they are in separate files:
-  - when a rust crate is built, all of its modules are recompiled
-- modules are namespaces, they’re containers for:
-    - functions, types, constants, and so on that make up program or library
-- `super` is an alias for the parent module
-- `self` is an alias for the current module
-- while paths in imports are treated as absolute paths by default
-  - `self` and `super` let you override that and import from relative paths
-- submodules can access private items in their parent modules
-  - but they have to import each one by name
-  - `use super::*;` only imports items that are marked pub
-
-## TODO
 - methods are also known as **associated functions**,
   - since they’re associated with a specific type
 - opposite of an associated function is a **free function**
@@ -141,6 +98,47 @@ let s2 = struct2 {
   - just like a function pointer in c++
 - `parse()` can parse any type that implements the `FromStr` trait
 
+## memory model
+- when value is assigned to a variable, that value is from then on named by that variable
+- when a variable is later accessed
+  - imagine drawing a line from the previous access to the new access (called 'flows')
+    - which establishes a dependency relationship between the two accesses
+    - you cannot draw lines from variable whose value is uninitialized or has been moved
+- a variable exists only so long as it holds a legal value
+- pushing values on stack is not considered allocating
+
+## array
+- array indices are usize values
+- array is `'static`
+- instead use `Iterator::map` by calling `.iter()` or `.into_iter()` on array as
+  - [T; N]::map is only necessary if needed a new array of same size in result
+  - lazy iterators tend to get optimized very well
+
+## struct
+``` rust
+// This is called "struct update syntax", from another struct value
+//can only happen in last position, and cannot be followed by a comma
+let s2 = User {
+    x: 14.0,
+    ..s1
+};
+```
+
+## crates and modules
+- crates are about code sharing between projects
+- modules are about code organization within a project
+- rust never compiles its modules separately, even if they are in separate files:
+  - when a rust crate is built, all of its modules are recompiled
+- modules are namespaces, they’re containers for:
+    - functions, types, constants, and so on that make up program or library
+- `super` is an alias for the parent module
+- `self` is an alias for the current module
+- while paths in imports are treated as absolute paths by default
+  - `self` and `super` let you override that and import from relative paths
+- submodules can access private items in their parent modules
+  - but they have to import each one by name
+  - `use super::*;` only imports items that are marked pub
+
 ## borrowed type
 -types provide access to the underlying data through references to the type of that data
  - they are said to be **borrowed as** that type
@@ -150,8 +148,7 @@ let s2 = struct2 {
   - a type is free to borrow as several different types
 
 ## ownership
-- all values have single owner
-  - enforced through borrow checker
+- all values have single owner enforced through borrow checker
 - references are never null
 - borrowing rule:
   - can have either (not both) one mutable reference or any number of immutable references
@@ -206,13 +203,6 @@ let m0 = &mut m.0; // ok: reborrowing mutable from mutable
 *m0 = 137;
 let r1 = &m.1;     // ok: reborrowing shared from mutable, and doesn't overlap with m0
 v.1;          // error: access through other paths still forbidden
-
-int x = 42;      // int variable, not const
-const int *p = &x;  // pointer to const int
-assert(*p == 42);
-x++;         // change variable directly
-assert(*p == 43);  // “constant” referent's value has changed
-
 
 let mut x = 42;    // nonconst i32 variable
 let p = &x;      // shared reference to i32
@@ -287,43 +277,55 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
   - or references  might be independent
 - cannot borrow mutable reference more than once at a time
 
-## const and 'static
+## const
 - const are static, immutable and inlined, simply replacing the const name with its value
   - this includes usage of constants from external crates, and non-Copy types
-  - provides a convenient alternative to code duplication
-  - `'static` is the only lifetime allowed for const, don't need to use it explicitly
-    - valid for the entire time a program runs, within the scope they were declared
-    - any references in the initializer must have 'static lifetimes
-  - constants may refer to the address of other constants
-    - in which case the address will have elided lifetimes where applicable
-    - compiler is still at liberty to translate the constant many times
-      - so the address referred to may not be stable
-  - must be explicitly typed
-  - use const for magic numbers and strings
-  - There are no mut constants
-  - const may be set only to a constant expression
-    - not to the result of a value that could only be computed at runtime
-  - not associated with specific memory location
-  - references to same constant are not guaranteed to refer to same memory address
-  - constant has no memory or other storage associated with it (it is not a place)
-  - think of constant as a convenient name for a particular value
-  - constant expression may only be omitted in a trait definition
-  - constants can contain destructors
-  - unlike associated const, free const may be unnamed by using underscore instead of name
-    - as with underscore imports, macros may safely emit same unnamed const in same
-      scope more than once
-- const, like statics, should always be in SCREAMING_SNAKE_CASE
-- `'static` variables point to a single location in memory for sharing
-  - values in static variables have a fixed address in memory
-  - static variable can be mutable and it is unsafe to access or modify them
-  - can only store resferences with the 'static lifetime
-  - unlike with constants, they can’t have destructors
-  - act as a single value across the entire codebase
-  - global variables are called static varibles in rust
-  - `'static` reference can live for the entire duration of the program
-  - all string literals have the `'static` lifetime
-  - let s: &'static str = "I have a static lifetime.";
-    - text of string is stored directly in the program’s binary, which is always available
+- provides a convenient alternative to code duplication
+- `'static` is the only lifetime allowed for const, don't need to use it explicitly
+  - valid for the entire time a program runs, within the scope they were declared
+  - any references in the initializer must have 'static lifetimes
+- constants may refer to the address of other constants
+  - in which case the address will have elided lifetimes where applicable
+  - compiler is still at liberty to translate the constant many times
+    - so the address referred to may not be stable
+- must be explicitly typed
+- use const for magic numbers and strings
+- There are no mut constants
+- const may be set only to a constant expression
+  - not to the result of a value that could only be computed at runtime
+- not associated with specific memory location
+- references to same constant are not guaranteed to refer to same memory address
+- constant has no memory or other storage associated with it (it is not a place)
+- think of constant as a convenient name for a particular value
+- constant expression may only be omitted in a trait definition
+  - means while defining trait:
+    - you can specify associated constants without providing an expression for their value
+```rust
+trait ExampleTrait {
+    const SCREAMING_SNAKE_CASE: usize; // Omitted expression
+    const _: Type = Expression;  // unnamed
+    const _: () = { struct _SameNameTwice; };  // unnamed
+}
+```
+- constants can contain destructors
+- unlike associated const, free const may be unnamed by using underscore instead of name
+  - as with underscore imports, macros may safely emit same unnamed const in same
+    scope more than once
+
+## 'static
+- static variables point to a single fixed address in memory for sharing
+- should always be in SCREAMING_SNAKE_CASE as const
+- static variable can be mutable and it is unsafe to access or modify them
+- can only store references with the 'static lifetime
+- unlike with constants, they can’t have destructors
+- act as a single value across the entire codebase
+- **global variables** are called **static variables** in rust
+- `'static` reference can live for the entire duration of the program
+```rust
+ // string literals have `'static` lifetime
+ // text of string is stored directly in the program’s binary, which is always available
+ let s: &'static str = "I have 'static lifetime";
+```
 
 ## const fn
 - it is a function that one is permitted to call from a const or static context
@@ -391,11 +393,6 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 - expressions that don’t finish normally are assigned the special type !
   - they’re exempt from the rules about types having to match
 - expressions of type ! can be coerced into any other type
-- fn exit(code: i32) -> !
-    The ! means that exit() never returns. It’s a divergent function.
-- `fn exit(code: i32) -> !`
-  - ! means that exit() never returns
-  - it’s a "divergent function"
 - `continue` has a ! type
 - `panic!()` has a ! type
 - `loop` has a ! type since the loop never ends
@@ -403,34 +400,36 @@ assert_eq!(*p, 42);  // if you take out the assignment, this is true
 
 ```rust
 pub type Infallible = !;
+
+// ! means that exit() never returns
+// it’s a "divergent function"
+fn exit(code: i32) -> !`
+
+trait MyTrait {}
+impl MyTrait for fn() -> ! {}
 ```
 
 - there is one case where `!` syntax can be used before `!` is stabilized
   - in the position of a function’s return type
 
-```rust
-trait MyTrait {}
-impl MyTrait for fn() -> ! {}
-```
-
 ### dynamically sized type (DST) or unsized type
 - ex: str: we can't know how long the string is untill runtime
   - means can't create a variable of type str nor can take an argument of type str
-- str and [T] types denote sets of values of varying sizes, they are unsized types
+- `str` and `[T]` types denote sets of values of varying sizes, they are unsized types
 - we must always put values of dynamically sized types behind the pointer of some kind
 - every trait is a DST we can refer to by using the name of the trait
 - Rust supports polymorphism with two related features: traits and generics
 - Rust can’t store unsized values in variables or pass them as arguments
-  - you can only deal with them through pointers like &str or Box<Write>, which are sized
-- mutable slice &mut [T] lets you read and modify elements, but can’t be shared
-  - a shared slice &[T] lets share access among several readers, but not modify elements
+  - only accessed through pointers like `&str` or `Box<Write>`, which are sized
+- mutable slice `&mut [T]` lets you read and modify elements, but can’t be shared
+  - a shared slice `&[T]` lets share access among several readers, but not modify elements
 - `Sized` trait to determine weather or not a type's size is known at compile time
   - `Sized` is automatically implemented for whose size is known at compile time
-  - rust implicitly adds a bound on  sized trait to every generic function
+  - rust implicitly adds a bound of Sized trait to every generic function
   - All type parameters have an implicit bound of Sized
-  - trait objects and slices are unsized
+  - **trait objects** and **slices** are unsized
     - example: `dyn Iterator` or `[u8]`
-  - special syntax `?Sized` can be used to remove this bound if it’s not appropriate.
+  - special syntax `?Sized` can be used to remove this bound if it is not appropriate
   - The one exception is implicit `Self` type of a trait
   - trait doesnot have implicit `Sized` bound as this is incompatible with trait objects
   - trait need to work with all possible implementators, and thus could be any size
@@ -1192,71 +1191,71 @@ fn good() -> impl Future<Output = u8> {
 
   ### 1. dereference a raw pointer
 
-    - immutabl pointer cant be directly assigned to after being dereferenced
-    - `*const T` is immutable raw pointer
-    - `*mut T` is mutable raw pointer
-    - asterisk is not dereference operator; it is part of the type name
-    ```rust
-        // can create raw pointers in safe code
-        let mut num = 5;
-        let r1 = &num as *const i32;
-        let r2 = &mut num as *mut i32;
+  - immutabl pointer cant be directly assigned to after being dereferenced
+  - `*const T` is immutable raw pointer
+  - `*mut T` is mutable raw pointer
+  - asterisk is not dereference operator; it is part of the type name
+  ```rust
+      // can create raw pointers in safe code
+      let mut num = 5;
+      let r1 = &num as *const i32;
+      let r2 = &mut num as *mut i32;
 
-        unsafe {
-          println!("r1 is: {}", *r1);
-          println!("r2 is: {}", *r2);
-        }
+      unsafe {
+        println!("r1 is: {}", *r1);
+        println!("r2 is: {}", *r2);
+      }
 
-        // Creating raw pointers with the raw borrow operators
-        let r3 = &raw const num;
-        let r4 = &raw mut num;
+      // Creating raw pointers with the raw borrow operators
+      let r3 = &raw const num;
+      let r4 = &raw mut num;
 
-        let address = 0x012345usize;
-        let r = address as *const i32; // raw pointer to an arbitary location
-    ```
-    - cannot dereference raw pointers outside an unsafe block
-    - can create raw pointers in safe code
-    - creating a pointer does not harm
-      - unless to access value it points at might end up dealing with an invlid value
-    - immutable raw pointer: cant be directly assigned to after being dereferenced
-    - different from references and smart pointers, raw pointers:
-      - are allowed to ignore the borrowing rules by having both immutable and mutable
-        pointers or multiple mutable pointers to the same location
-      - arent guaranteed to point to valid memory
-      - are allowed to be null
-      - dont implement any automatic cleanup
-    - gives performance
-    - has ability to interface with another language
-    - interface with hardware where rust guarantees donot apply
-    - borrow checker cant understand that we are borrowing different parts of the slice
-      - it only know that we are borrowing from the same slice twice
+      let address = 0x012345usize;
+      let r = address as *const i32; // raw pointer to an arbitary location
+  ```
+  - cannot dereference raw pointers outside an unsafe block
+  - can create raw pointers in safe code
+  - creating a pointer does not harm
+    - unless to access value it points at might end up dealing with an invlid value
+  - immutable raw pointer: cant be directly assigned to after being dereferenced
+  - different from references and smart pointers, raw pointers:
+    - are allowed to ignore the borrowing rules by having both immutable and mutable
+      pointers or multiple mutable pointers to the same location
+    - arent guaranteed to point to valid memory
+    - are allowed to be null
+    - dont implement any automatic cleanup
+  - gives performance
+  - has ability to interface with another language
+  - interface with hardware where rust guarantees donot apply
+  - borrow checker cant understand that we are borrowing different parts of the slice
+    - it only know that we are borrowing from the same slice twice
 
   ### 2. call an unsafe function or method
+  ```rust
+      unsafe fn dangerous() {}
+
+      unsafe {
+          dangerous();
+      }
+  ```
+
+  - calling unsafe fn without unsafe block or fn results in error
+  - to perform unsafe operations in the body of an unsafe function:
+    - we still need to use an unsafe block just as within a regular function
+    - compiler will warn you if you forget
+    - it helps to keep unsafe blocks as small as possible
+  - enclose unsafe code within a safe abstraction and provide a safe api
+    - gives surety about the proper functioning of code
+  - using `extern` Functions to Call External Code
+    - keyword `extern` facilitates creation and use of Foreign Function Interface(FFI)
+    - FFI is a way for programming language to:
+      - define fns to enable a foreign programming language to call those fns
     ```rust
-        unsafe fn dangerous() {}
-
-        unsafe {
-            dangerous();
-        }
+      #[unsafe(no_mangle)]
+      pub extern "C" fn call_from_c() {
+        safe println!("Just called a Rust function from C!");
+      }
     ```
-
-    - calling unsafe fn without unsafe block or fn results in error
-    - to perform unsafe operations in the body of an unsafe function:
-      - we still need to use an unsafe block just as within a regular function
-      - compiler will warn you if you forget
-      - it helps to keep unsafe blocks as small as possible
-    - enclose unsafe code within a safe abstraction and provide a safe api
-      - gives surety about the proper functioning of code
-    - using `extern` Functions to Call External Code
-      - keyword `extern` facilitates creation and use of Foreign Function Interface(FFI)
-      - FFI is a way for programming language to:
-        - define fns to enable a foreign programming language to call those fns
-      ```rust
-        #[unsafe(no_mangle)]
-        pub extern "C" fn call_from_c() {
-          safe println!("Just called a Rust function from C!");
-        }
-      ```
 
   ### 3. access or modify a mutable static variable
     - in rust, global variables are called static variable
